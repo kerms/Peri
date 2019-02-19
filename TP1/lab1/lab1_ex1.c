@@ -202,7 +202,7 @@ main ( int argc, char **argv )
         exit ( 1 );
     }
 
-    period = 500; /* default = 1Hz */
+    period = 500; /* 2Hz */
     if ( argc > 1 ) {
         period = atoi ( argv[1] );
     }
