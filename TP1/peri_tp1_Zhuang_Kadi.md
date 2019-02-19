@@ -51,7 +51,7 @@ L'idée de dupliquer le code de la boucle en insérant le clignotement de `LED1`
   - on ferme `LED0`
   - `delay`
 
-On peut aussi faire un compteur et tester si à chaque itération de la boucle si on doit eteindre une LED ou l'allumer. Mais cela ne sera pas efficace.\
+On peut aussi faire un compteur et tester si à chaque itération de la boucle si on doit éteindre une LED ou l'allumer. Mais cela ne sera pas efficace.\
 
 La deuxième approche est de faire des [I'm an inline-style link](https://openclassrooms.com/fr/courses/1513891-la-programmation-systeme-en-c-sous-unix/1514567-les-threads "OpenclassRoom").\
 
