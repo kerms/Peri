@@ -51,7 +51,7 @@ L'idée de dupliquer le code de la boucle en insérant le clignotement de `LED1`
   - on ferme `LED0`
   - `delay`
 
-On peut aussi faire un compteur et tester si à chaque tour de boucle on doit fermer un LED ou l'ouvrire. Mais cela sera pas efficace.\
+On peut aussi faire un compteur et tester si à chaque itération de la boucle si on doit eteindre une LED ou l'allumer. Mais cela ne sera pas efficace.\
 
 La deuxième approche est de faire des [I'm an inline-style link](https://openclassrooms.com/fr/courses/1513891-la-programmation-systeme-en-c-sous-unix/1514567-les-threads "OpenclassRoom").\
 
@@ -188,7 +188,7 @@ Pour utiliser les `threads`, on inclue la librairie `pthread.h`. Il faut aussi f
 
 ### Changer la fréquence de clignotement par un bouton
 
-On ajoute une variable global `switch_on` qui à 0 fonctionnement normal, puis 1 pour changement de fréquence.\
+On ajoute une variable global `switch_on` qui désigne le fonctionnement normal quand elle est mise à 0 et le changement de fréquence quand elle est mise à 1.\
 
 On change le code dans la fonction de threads: \
 Il suffit de faire `delay*(switch_on + 1)` pour diminuer de moitié la fréquence.
@@ -237,7 +237,7 @@ void loop() {
     delay(250/(switch_on*2+1));
 }
 ```
-######Remarque
+###### Remarque
 La librairie Wire permet la communication avec 	les composants utilisant le protocol I2C / TWI.
 
 
