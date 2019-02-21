@@ -53,7 +53,7 @@ L'idée de dupliquer le code de la boucle en insérant le clignotement de `LED1`
 
 On peut aussi faire un compteur et tester si à chaque itération de la boucle si on doit éteindre une LED ou l'allumer. Mais cela ne sera pas efficace.\
 
-La deuxième approche est de faire des [I'm an inline-style link](https://openclassrooms.com/fr/courses/1513891-la-programmation-systeme-en-c-sous-unix/1514567-les-threads "OpenclassRoom").\
+La deuxième approche est de faire des [threads](https://openclassrooms.com/fr/courses/1513891-la-programmation-systeme-en-c-sous-unix/1514567-les-threads "OpenclassRoom").\
 
 Pour factoriser le code, on peut créer une structure qui comporte les informations nécessaires au exécution:
  - L'adresse de début des GPIOs
@@ -69,7 +69,7 @@ Par exemple:\
 Pour le `LED0`, on lui passe son numéro qui est 4, puis `delay`\
 Pour le `LED1`, on lui passe son numéro qui est 17, puis `delay`/3
 
-Un thread qui fait clignoter la led:
+Un thread qui fait clignoter une led:
 
 ```cpp
 void* clignote_led(void *arg) {
@@ -140,7 +140,8 @@ int main ( int argc, char **argv )
 
     gled1.gpio_base = gpio_base;
     gled1.id_gpio = GPIO_LED1;
-    gled1.period = half_period/2;
+    // deux fois plus vite que LED0
+    gled1.period = half_period/2; 
     
 
     gbutton.gpio_base = gpio_base;
@@ -229,15 +230,13 @@ void loop() {
     Serial.print("valeur de photoresistance : ");
     Serial.println(val);             // debug value
     digitalWrite(led_id, LOW);
-    // fait une pause de 1 seconde
+    // fait une pause de 1 seconde ou 250 en mode HIGH
     delay(250/(switch_on*2+1));
     // éteint la LED
     digitalWrite(led_id, HIGH);
-    // fait une pause de 1 seconde
+    // fait une pause de 1 seconde ou 250 en mode HIGH
     delay(250/(switch_on*2+1));
 }
 ```
 ###### Remarque
 La librairie Wire permet la communication avec 	les composants utilisant le protocol I2C / TWI.
-
-
