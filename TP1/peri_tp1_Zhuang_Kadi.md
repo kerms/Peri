@@ -61,9 +61,9 @@ Pour factoriser le code, on peut créer une structure qui comporte les informati
  - La fréquence de fonctionnement
 On a alors besoin d'une seule fonction pour faire clignoter N LED à des fréquences différentes, chacune indépendament.\
 Dans le code de la fonction, on met un while qui fait tout simplement:
-  - on alume
+  - on allume
   - on attend `struct.delay`
-  - on ferme
+  - on éteint
   - on attend `struct.delay`
 Par exemple:\
 Pour le `LED0`, on lui passe son numéro qui est 4, puis `delay`\
