@@ -9,11 +9,11 @@ Yasma KADI
 
   * Le tableau `waitForTimer[]` contient le numéro de la période enregistrée lors du dernier appel à `waitFor()`.
 
-  * La fonction `waitFor()` renvoie 2 quand le nombre de périodes qui s'est écoulé depuis le dernier appel à waitFor() est //TODO
+  * La fonction `waitFor()` renvoie 2 quand on a pas appelé `waitFor()` depuis deux période.
 
   * L'affichage de salut a le même comportement générique que Bonjour, donc on va réutiliser les fonctions de `Mess`. 
     - On a ajouté `struct Mess_st`  pour `Mess_salut`
-    - On a modifié le macro `MAX_WAIT_FOR_TIMER` pour avpir maintenant 3 timers.
+    - On a modifié le macro `MAX_WAIT_FOR_TIMER` pour avoir maintenant 3 timers.
     - Le `setup` est similaire à celui de `Bonjour`, mais qui a un id = `2` et 1,5 sec
 
 ```c
@@ -55,7 +55,7 @@ void testdrawchar(void) {
 
 
 ### Communications inter-tâches
-On veut lire avec `T1` dans la boîte à lettre toute les 0,5 sec, donc on va lui conditionner avec un `waitFor`.\
+La lecture de `T1` de la boîte à lettre se fait toute les 0,5 sec, on lui conditionne avec un `waitFor`.\
 
 On a `T2` qui écrit dans la boîte à lettre dès qu'il peut.\
 
@@ -70,7 +70,7 @@ struct GPIO_t {
 };
 ```
 
-Pour conditionner `T1`, on a mis dans une fonction `loop_photo()`, mais aussi `T2`
+Pour conditionner `T1`, on a mis dans une fonction `loop_photo()`, et `T2` avant waitFor() pour récupérer la lettre dès qu'il pourra.
 
 ```cpp
 void loop_photo(struct GPIO_t *photo) {
@@ -99,13 +99,12 @@ void loop_T1(struct mailbox *mb) {
 void loop_T2(struct mailbox *mb) {
   if (mb->state != FULL) return; // attend que la mailbox soit pleine
   // usage de mb->val
-  Serial.println(mb->val);
   led.period = 1000000/(1000*5/mb->val);
   mb->state = EMPTY;
 }
 ```
 
-###### On ajoute la LED
+###### On ajoute la tâche du LED
 
 ```cpp
 void loop_led(struct GPIO_t *led) {
@@ -123,14 +122,12 @@ Une résolution est d'avoir une période fixe et un compteur qui dépend de la p
   - Si le compteur arrive à 0, on change le state(ON/OFF) du LED
   - Le compteur se décrémente à chaque période.
 
-Si on a un compteur qui a une valeur de `10`, mais que la nouvelle valeur multiplicatif est 8, on devrait mettre le compteur à 8. Donc compteur = mult_val;
-
-Mais comme mult_val change toute les 0,5 sec, pour éviter de ne pas remettre compteur à mult_val même si on a compteur < mult_val, ni le laisser plus grand que mult_val.
+  * Si le compteur a une valeur de `10`, mais que la nouvelle valeur multiplicatif est 8, le compteur devrait avoir 8. Donc compteur = mult_val;
+  * Si le compteur a une valeur de `8`, et la nouvelle valeur de `mult_val` = 10, la valeur du compteur ne doit pas être changée.
 
 Donc lors d'un changement valeur de photorésistance, on prend la valeur `min(compteur_courrant, val_photoresistance)`.
 
-On a fait aussi une structure pour la led
-
+Maintenant deux nouveaux champs est ajoutés, une nouvelle structure est nécessaire.
 
 ```cpp
 struct led_t {
@@ -144,7 +141,7 @@ void loop_T2(struct mailbox *mb) {
   if (mb->state != FULL) return; // attend que la mailbox soit pleine
   // usage de mb->val
   led.cpt = min(mb->val, led.cpt);
-  led.mult_val = mb->val;
+  led.mult_val = mb->val; // change total time to blink
   mb->state = EMPTY;
 }
 
@@ -154,7 +151,7 @@ void loop_led(struct led_t *led) {
     led->gpio.etat = (led->gpio.etat+1)%2; // switch state
     digitalWrite(led->gpio.pin, led->gpio.etat);
     led->cpt = led->mult_val; // reset cpt
-  } else {
+  } else {  // cpt > 0
     --led->cpt;
   }
 }
@@ -164,7 +161,7 @@ On obtient le résultat attendu :)
 
 ### Gestion des interruptions
 
-On a essayer de compiler avec `Serial.onReceive(my_func)`, mais le compilateur ne le reconnait pas.
+On a essayé de compiler avec `Serial.onReceive(my_func)`, mais le compilateur ne le reconnait pas.
 
 Notre amie `Google` nous a montré qu'il existe la fameuse fonction :
 
