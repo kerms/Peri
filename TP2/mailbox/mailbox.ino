@@ -1,5 +1,10 @@
+#include <Keyboard.h>
+
+//#include <Wire.h>
+
 #define MAX_WAIT_FOR_TIMER 3
 #define photo_id A0
+#define LED_ID 13
 
 unsigned int waitFor(int timer, unsigned long period){
   static unsigned long waitForTimer[MAX_WAIT_FOR_TIMER];
@@ -18,15 +23,22 @@ struct GPIO_t {
   int pin;
   int etat;
 };
+struct GPIO_t photo;
 
-struct GPIO_t photo = {.timer = 0, .period = 500000, .pin=photo_id};
-struct GPIO_t led = {.timer = 1, .period = 50000, .pin=13};
+struct led_t {
+  GPIO_t gpio;      // gpio information
+  int cpt;          // remaining time to blink
+  unsigned mult_val;// total time need to blink
+};
+struct led_t led;
 
 struct mailbox {
   STATE state;
   int val;
 };
 struct mailbox mb0 = {.state=EMPTY};
+
+int key_s = 0;
 
 //write
 void loop_T1(struct mailbox *mb) {
@@ -39,8 +51,10 @@ void loop_T1(struct mailbox *mb) {
 void loop_T2(struct mailbox *mb) {
   if (mb->state != FULL) return; // attend que la mailbox soit pleine
   // usage de mb->val
+  Serial.print("Photo value : ");
   Serial.println(mb->val);
-  led.period = 1000000/(1000*5/mb->val);
+  led.cpt = (led.cpt > mb->val) ? mb->val : led.cpt;
+  led.mult_val = mb->val;
   mb->state = EMPTY;
 }
 
@@ -50,18 +64,44 @@ void loop_photo(struct GPIO_t *photo) {
   loop_T1(&mb0);
 }
 
-void loop_led(struct GPIO_t *led) {
-  if (!waitFor(led->timer, led->period)) return;
-  digitalWrite(led->pin, led->etat);
-  led->etat = (led->etat+1)%2;
+void loop_led(struct led_t *led) {
+  if (!waitFor(led->gpio.timer, led->gpio.period)) return;
+  //Serial.print("Cpt value : ");
+  //Serial.println(led->cpt);
+  
+  if (0>(led->cpt)){
+    //cpt == 0
+    led->gpio.etat = (led->gpio.etat+(1 >> key_s))%2;
+    digitalWrite(led->gpio.pin, led->gpio.etat);
+    led->cpt = led->mult_val;
+  } else {
+    --led->cpt;
+  }
 }
 
+void serialEvent() {
+  int i, c;
+  for (i = 0; i < Serial.available(); i++) {
+    c = Serial.read();
+    //s
+    //Serial.print(Serial.read());
+    if (c == 115) { //s
+      key_s = (key_s+1)%2;
+    }
+  }
+}
 
 /* ----------------------------------------------- */
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-
+  photo.timer = 0;
+  photo.period = 500000;
+  photo.pin=photo_id;
+  
+  led.gpio.timer = 1;
+  led.gpio.period = 200;
+  led.gpio.pin = LED_ID;
 }
 
 void loop() {
