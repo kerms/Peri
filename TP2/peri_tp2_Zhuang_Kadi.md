@@ -9,11 +9,11 @@ Yasma KADI
 
   * Le tableau `waitForTimer[]` contient le numéro de la période enregistrée lors du dernier appel à `waitFor()`.
 
-  * La fonction `waitFor()` renvoie 2 quand on a pas appelé `waitFor()` depuis deux période.
+  * La fonction `waitFor()` renvoie 2 quand on n'a pas appelé `waitFor()` depuis deux périodes.
 
   * L'affichage de salut a le même comportement générique que Bonjour, donc on va réutiliser les fonctions de `Mess`. 
     - On a ajouté `struct Mess_st`  pour `Mess_salut`
-    - On a modifié le macro `MAX_WAIT_FOR_TIMER` pour avoir maintenant 3 timers.
+    - On a modifié la macro `MAX_WAIT_FOR_TIMER` pour avoir maintenant 3 timers.
     - Le `setup` est similaire à celui de `Bonjour`, mais qui a un id = `2` et 1,5 sec
 
 ```c
@@ -57,7 +57,7 @@ void testdrawchar(void) {
 ### Communications inter-tâches
 La lecture de `T1` de la boîte à lettre se fait toute les 0,5 sec, on lui conditionne avec un `waitFor`.\
 
-On a `T2` qui écrit dans la boîte à lettre dès qu'il peut.\
+On a `T2` qui écrit dans la boîte à lettres dès qu'il peut.\
 
 On crée d'abord une structure :
 
@@ -119,15 +119,15 @@ void loop_led(struct GPIO_t *led) {
 Le souçis avec cette implémentation est que lorsque la période change (la valeur de photorésistance change), le nombre de période depuis le dernier appel à `waitFor()` n'est plus cohérent.
 
 Une résolution est d'avoir une période fixe et un compteur qui dépend de la photorésistance. 
-  - Si le compteur arrive à 0, on change le state(ON/OFF) du LED
+  - Si le compteur arrive à 0, on change le state(ON/OFF) de la LED
   - Le compteur se décrémente à chaque période.
 
-  * Si le compteur a une valeur de `10`, mais que la nouvelle valeur multiplicatif est 8, le compteur devrait avoir 8. Donc compteur = mult_val;
+  * Si le compteur a une valeur de `10`, mais que la nouvelle valeur multiplicative est 8, le compteur devrait avoir 8. Donc compteur = mult_val;
   * Si le compteur a une valeur de `8`, et la nouvelle valeur de `mult_val` = 10, la valeur du compteur ne doit pas être changée.
 
 Donc lors d'un changement valeur de photorésistance, on prend la valeur `min(compteur_courrant, val_photoresistance)`.
 
-Maintenant deux nouveaux champs est ajoutés, une nouvelle structure est nécessaire.
+Maintenant, deux nouveaux champs sont ajoutés, une nouvelle structure est nécessaire.
 
 ```cpp
 struct led_t {
@@ -163,7 +163,7 @@ On obtient le résultat attendu :)
 
 On a essayé de compiler avec `Serial.onReceive(my_func)`, mais le compilateur ne le reconnait pas.
 
-Notre amie `Google` nous a montré qu'il existe la fameuse fonction :
+Notre ami `Google` nous a montré qu'il existe la fameuse fonction :
 
 ```cpp
 void serialEvent();
