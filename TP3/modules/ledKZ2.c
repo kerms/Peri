@@ -4,20 +4,18 @@
 #include <asm/io.h>
 #include <mach/platform.h>
 
-
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Charlie, 2015");
+MODULE_DESCRIPTION("Module, aussitot insere, aussitot efface");
 
 #define NBMAX_LED 32
-
-#define LED0 = 4;
-#define LED1 = 17;
+#define LED0 4
+#define LED1 17
 
 static int major;
 static int leds[NBMAX_LED];
 static int nbled = 2;
 static int btn = 18;
-
-led[0] = LED0;
-led[1] = LED1;
 
 struct gpio_s
 {
@@ -43,29 +41,60 @@ MODULE_PARM_DESC(LEDS, "tableau des numéros de port LED");
 module_param(btn, int, 0);
 MODULE_PARM_DESC(btn, "numéro du port du bouton");
 
-// 0 est le numéro majeur qu'on laisse choisir par linux
+static int count = 0;
+
+static void gpio_fsel(int pin, int fun)
+{
+    uint32_t reg = pin / 10;
+    uint32_t bit = (pin % 10) * 3;
+    uint32_t mask = 0b111 << bit;
+    gpio_regs->gpfsel[reg] = (gpio_regs->gpfsel[reg] & ~mask) | ((fun << bit) & mask);
+}
+
+static void gpio_write(int pin, bool val)
+{
+    if (val)
+        gpio_regs->gpset[pin / 32] = (1 << (pin % 32));
+    else
+        gpio_regs->gpclr[pin / 32] = (1 << (pin % 32));
+}
+
+/* Do no fill with '\n' */
+static void gpio_read(int pin, char *buf, size_t buff_size) {
+    if (buff_size) {
+        buf[0] = gpio_regs->gplev[btn / 32];
+        buf[1] = gpio_regs->gplev[btn / 32] >> 8;
+        buf[2] = gpio_regs->gplev[btn / 32] >> 16;
+        buf[3] = gpio_regs->gplev[btn / 32] >> 24;
+    }
+}
+
 
 static int 
 open_ledbp(struct inode *inode, struct file *file) {
-    printk(KERN_DEBUG "KY - open()\n");
+    count ++;
+    printk(KERN_DEBUG "KY - open() : cpt = %d\n", count);
     return 0;
 }
 
 static ssize_t 
 read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos) {
     printk(KERN_DEBUG "KY - read()\n");
+    gpio_read(LED0, buf, count);
     return count;
 }
 
 static ssize_t 
 write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos) {
     printk(KERN_DEBUG "KY - write()\n");
+    gpio_write(LED0, buf[0]);
     return count;
 }
 
 static int 
 release_ledbp(struct inode *inode, struct file *file) {
-    printk(KERN_DEBUG "KY - close()\n");
+    count --;
+    printk(KERN_DEBUG "KY - close() : cpt = \n", count);
     return 0;
 }
 struct file_operations fops_ledbp =
@@ -85,6 +114,7 @@ static int __init mon_module_init(void)
    int i=0;
    for (i=0; i < nbled; i++)
        printk(KERN_DEBUG "LED %d = %d\n", i, leds[i]);
+   gpio_fsel(btn, 0);
    return 0;
 }
 

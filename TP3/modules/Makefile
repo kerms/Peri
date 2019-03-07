@@ -1,12 +1,15 @@
-CARD_NUMB       = 25
+CARD 		    ?= 25
 ROUTER          = peri
-LOGIN           = KADI-ZHUANG
+LOGIN           = kadi-zhuang
 LAB             = lab3
+USER    		= zhuang
 
-MODULE          = ledKZ2
+FILE           ?= ledKZ2.ko
+MODULE 			= ledKZ2
+
 
 CROSSDIR        = /users/enseig/franck/peri
-KERNELDIR       = /dsk/l1/misc/linux-rpi-3.18.y
+KERNELDIR       = /dsk/l1/misc/$(USER)/linux-rpi-3.18.y
 CROSS_COMPILE   = $(CROSSDIR)/arm-bcm2708hardfp-linux-gnueabi/bin/bcm2708hardfp-
         
 obj-m           += $(MODULE).o
@@ -14,10 +17,11 @@ default:;       make -C $(KERNELDIR) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) M=$
 
 clean:;         make -C $(KERNELDIR) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) M=$(PWD) clean
 
-upload:;        scp -P50$(CARD_NUMB) $(MODULE).ko pi@$(ROUTER):$(LOGIN)/$(MODULE).ko
+upload:
+	scp -P50$(CARD) $(FILE) pi@$(ROUTER):$(LOGIN)/
 
 up_ins : insdev
-	scp -P50$(CARD_NUMB) $< pi@$(ROUTER):$(LOGIN)/$<
+	scp -P50$(CARD) < pi@$(ROUTER):$(LOGIN)/$<
 
 up_rm : rmdev
-	scp -P50$(CARD_NUMB) $< pi@$(ROUTER):$(LOGIN)/$<
+	scp -P50$(CARD) < pi@$(ROUTER):$(LOGIN)/$<

@@ -1,0 +1,1 @@
+watch -n 0.1 "dmesg | tail -n $((LINES-6))"
