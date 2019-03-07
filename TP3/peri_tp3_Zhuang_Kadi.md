@@ -26,9 +26,9 @@ static void __exit mon_module_cleanup(void);
 Dans le Makefile, nous avons changé la valeur des variables `CARD_NUMB`, `LOGIN` et `LAB`.
 
 ###### Remarque:
-Quand nous avons essayé de compiler, nous avons eu une erreur due au fait de confondre la commande `modules` avec le nom de notre module. Pour cela, nous avons renomé le module par ledKZ. 
+Quand on a essayé de compiler, on a eu une erreur due au fait de confondre la commande `modules` avec le nom de notre module. Pour cela, on a renomé le module par ledKZ. 
 
-Ensuite, nous avons lancé sur la raspberry les commandes suivantes:
+Ensuite, on a lancé sur la raspberry les commandes suivantes:
 
 - Pour charger le module
 ```bash
@@ -50,7 +50,7 @@ dmesg
 
 ### Étape 2 : ajout des paramètres au module
 
-Dans cette partie, nous avons rajouté des paramètres pour le module:
+Dans cette partie, on a rajouté des paramètres pour le module:
 
 ```cpp
 /* leds est un tableau qui contient les numéros de GPIO de LEDs */
@@ -58,7 +58,7 @@ module_param_array(leds, int, &nbled, 0);
 MODULE_PARM_DESC(LEDS, "tableau des numéros de port LED");
 
 ```
-Pour vérifier que les paramètres ont été bien lus, nous avons utilisé une boucle `for` 
+Pour vérifier que les paramètres ont été bien lus, on a utilisé une boucle `for` 
 
 ```cpp
 /* Affichage des LEDs et bouton pour voir*/
@@ -70,7 +70,7 @@ Pour vérifier que les paramètres ont été bien lus, nous avons utilisé une b
 ```
 
 ```bash
-sudo insmod ledKZ.ko leds=4,17,26
+sudo insmod ledKZ.ko leds=4,17
 ```
 
 ```
@@ -79,6 +79,45 @@ sudo insmod ledKZ.ko leds=4,17,26
 [  895.883416] nbled=3 !
 [  895.883427] LED 0 = 4
 [  895.883440] LED 1 = 17
-[  895.883450] LED 2 = 26
 ```
 ### Étape 3 : création d'un driver qui ne fait rien, mais qui le fait dans le noyau
+
+Comme on travaille à plusieurs sur la même carte Raspberry, on nomme notre module ledKZ2 pour le distinguer et éviter toute collision. 
+
+Suivant les même étapes décrites précédemment, on compile, déplace et charge le module.
+
+Pour récupérer le numéro du `major`, on utilise la commande: 
+
+```bash
+cat /proc/devices | grep -n ledKZ2 
+# 23:244 ledKZ2
+```
+Maintenant on crée le device à l'aide des commandes: 
+
+```bash
+sudo mknod /dev/ledKZ2 c 244 0
+sudo chmod a+rw /dev/ledKZ2
+``` 
+On note que le fichier ledKZ2 existe dans le répertoire dev (commande `ls`).
+
+
+### Étape 4 : accès aux GPIO depuis les fonctions du pilote
+
+Dans cette étape, on modifie le driver précédent `ledKZ2` pour accéder aux registres des GPIO.
+
+##### Le driver complet 
+
+```cpp
+
+``` 
+##### Script du chargement
+
+```cpp
+
+``` 
+##### Programme de validation
+
+```cpp
+
+``` 
+
