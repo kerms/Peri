@@ -108,16 +108,100 @@ Dans cette étape, on modifie le driver précédent `ledKZ2` pour accéder aux r
 ##### Le driver complet 
 
 ```cpp
+static void gpio_read(int pin, char *buf, size_t buff_size) {
+/* on remplie le buffer avec le registre GPLEV0 */
+    if (buff_size) {
+        buf[0] = gpio_regs->gplev[btn / 32];
+        buf[1] = gpio_regs->gplev[btn / 32] >> 8;
+        buf[2] = gpio_regs->gplev[btn / 32] >> 16;
+        buf[3] = gpio_regs->gplev[btn / 32] >> 24;
+    }
+}
+
+static ssize_t 
+read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos) {
+    printk(KERN_DEBUG "KY - read()\n");
+    gpio_read(LED0, buf, count); 
+    return count;
+}
+
+static ssize_t 
+write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos) {
+    printk(KERN_DEBUG "KY - write()\n");
+    gpio_write(LED0, buf[0]); // dans notre code user, on écrit dans le buf[0]
+    return count;
+}
 
 ``` 
 ##### Script du chargement
 
-```cpp
+```makefile
+CARD     ?= 25
+ROUTER    = peri
+LOGIN     = kadi-zhuang
+FILE      = ./TP3/modules/test.c
+USER      = zhuang
 
+all:
+
+# transfert de la clé ssh et création du répertoire LOGIN
+key_trans:
+	ssh-copy-id -i ~/.ssh/id_rsa.pub -p 50$(CARD) pi@$(ROUTER)
+	ssh -p 50$(CARD) pi@peri 'mkdir -p ~/$(LOGIN)'
+
+# Se connecter
+co: 
+	ssh -p 50$(CARD) pi@peri
+
+# envoyer un fichier avec make up FILE=My_file
+up: 
+	scp -P50$(CARD) $(FILE) pi@$(ROUTER):$(LOGIN)/
+
+# décompresser linux dans /misc
+import_linux : /dsk/l1/misc/$(USER)
+	# cp /users/enseig/zhuang/linux-rpi-3.18.y.tbz2 /dsk/l1/misc/$(USER)/linux-rpi-3.18.y.tbz2
+	tar xjf /users/enseig/zhuang/linux-rpi-3.18.y.tbz2 -C /dsk/l1/misc/$(USER)
+
+/dsk/l1/misc/$(USER) : 
+	mkdir /dsk/l1/misc/$(USER)
+	chmod 740 /dsk/l1/misc/$(USER)
 ``` 
 ##### Programme de validation
 
 ```cpp
+#define LED0 4
+#define BUTTON 18
 
+int main(void)
+{
+	/* code */
+	int file = open("/dev/ledKZ2", O_RDWR);
+	char buff_read[16];
+	char buff_write[16];
+	buff_write[0] = (char)0;
+	buff_write[1] = (char)1;
+	if (file < 0)
+	{
+		perror("open");
+		exit(errno);
+	}
+
+	while (1) { // led blink 
+		write(file, &buff_write, 16);
+		read(file, &buff_read, 16);
+		printf("read buff : [0]: %d - [1]: %d - [2]: %d - [3]: %d\n", buff_read[0], buff_read[1], buff_read[2],buff_read[3] );
+		sleep(1);
+		
+		write(file, &buff_write[1], 16);
+		read(file, &buff_read, 16);
+		printf("read buff : [0]: %d - [1]: %d - [2]: %d - [3]: %d\n", buff_read[0], buff_read[1], buff_read[2],buff_read[3] );
+		sleep(1);
+	}
+
+	return 0;
+}
 ``` 
+### Conclusion
+
+On a réussit à créer notre driver, à l'utiliser pour faire clignoter les LEDs et lire la valeur de celles-ci. Aussi, on a essayé de lire la valeur du bouton de la même manière (lire le registre GPLEV0). Cependant, la valeur du bouton n'est pas mise à jour dans le registre GPLEV0 :(
 
