@@ -4,6 +4,9 @@ Cours/
 *.o
 *.tar
 *.gz
+*.ko
+*.x
+*.out
 
 2017-2018/
 
