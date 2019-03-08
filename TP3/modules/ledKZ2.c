@@ -34,7 +34,7 @@ struct gpio_s
     uint32_t gppudclk[3];
     uint32_t test[1];
 }
-*gpio_regs = (struct gpio_s *)__io_address(GPIO_BASE);
+volatile *gpio_regs = (struct gpio_s *)__io_address(GPIO_BASE);
 
 module_param_array(leds, int, &nbled, 0);
 MODULE_PARM_DESC(LEDS, "tableau des numéros de port LED");
@@ -61,12 +61,15 @@ static void gpio_write(int pin, bool val)
 
 /* Do no fill with '\n' */
 static void gpio_read(int pin, char *buf, size_t buff_size) {
-    if (buff_size) {
-        buf[0] = gpio_regs->gplev[btn / 32];
-        buf[1] = gpio_regs->gplev[btn / 32] >> 8;
-        buf[2] = gpio_regs->gplev[btn / 32] >> 16;
-        buf[3] = gpio_regs->gplev[btn / 32] >> 24;
-    }
+    printk(KERN_DEBUG "reglev[0] : %x %x\n", gpio_regs->gplev[btn / 32], ((gpio_regs->gplev[btn / 32])>>18)&1);
+    //if (buff_size) {
+      if (((gpio_regs->gplev[btn / 32] >>  btn)&1) == 0) {
+        buf[0] = '0';
+      } else {
+        buf[0] = '1';
+      }
+      printk(KERN_DEBUG "KY - read btn value = %c \n", buf[0]);
+    //}
 }
 
 
@@ -80,21 +83,24 @@ open_ledbp(struct inode *inode, struct file *file) {
 static ssize_t 
 read_ledbp(struct file *file, char *buf, size_t count, loff_t *ppos) {
     printk(KERN_DEBUG "KY - read()\n");
-    gpio_read(LED0, buf, count);
+    gpio_read(btn, buf, count);
     return count;
 }
 
 static ssize_t 
 write_ledbp(struct file *file, const char *buf, size_t count, loff_t *ppos) {
     printk(KERN_DEBUG "KY - write()\n");
-    gpio_write(LED0, buf[0]);
+    if (buf[0] == '0') 
+      gpio_write(LED0, 0);
+    else 
+      gpio_write(LED0, 1);
     return count;
 }
 
 static int 
 release_ledbp(struct inode *inode, struct file *file) {
     count --;
-    printk(KERN_DEBUG "KY - close() : cpt = \n", count);
+    printk(KERN_DEBUG "KY - close() : cpt = %d\n", count);
     return 0;
 }
 struct file_operations fops_ledbp =
@@ -115,6 +121,8 @@ static int __init mon_module_init(void)
    for (i=0; i < nbled; i++)
        printk(KERN_DEBUG "LED %d = %d\n", i, leds[i]);
    gpio_fsel(btn, 0);
+   gpio_fsel(LED0, 1);
+   gpio_fsel(LED1, 1);
    return 0;
 }
 

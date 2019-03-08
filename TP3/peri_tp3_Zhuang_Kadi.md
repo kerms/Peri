@@ -109,12 +109,14 @@ Dans cette étape, on modifie le driver précédent `ledKZ2` pour accéder aux r
 
 ```cpp
 static void gpio_read(int pin, char *buf, size_t buff_size) {
-/* on remplie le buffer avec le registre GPLEV0 */
+    printk(KERN_DEBUG "reglev[0] : %x %x\n", gpio_regs->gplev[btn / 32], ((gpio_regs->gplev[btn / 32])>>18)&1);
     if (buff_size) {
-        buf[0] = gpio_regs->gplev[btn / 32];
-        buf[1] = gpio_regs->gplev[btn / 32] >> 8;
-        buf[2] = gpio_regs->gplev[btn / 32] >> 16;
-        buf[3] = gpio_regs->gplev[btn / 32] >> 24;
+      if (((gpio_regs->gplev[btn / 32] >>  btn)&1) == 0) { // ATTENTION AUX PARANTHESES!!!
+        buf[0] = '0';
+      } else {
+        buf[0] = '1';
+      }
+      printk(KERN_DEBUG "KY - read btn value = %c \n", buf[0]);
     }
 }
 
@@ -169,39 +171,34 @@ import_linux : /dsk/l1/misc/$(USER)
 ##### Programme de validation
 
 ```cpp
-#define LED0 4
-#define BUTTON 18
 
-int main(void)
+#include <stdio.h>
+
+#define NBLED 2
+#define NBBP 1
+char led[NBLED];
+char bp[NBBP];
+ 
+int main()
 {
-	/* code */
-	int file = open("/dev/ledKZ2", O_RDWR);
-	char buff_read[16];
-	char buff_write[16];
-	buff_write[0] = (char)0;
-	buff_write[1] = (char)1;
-	if (file < 0)
-	{
-		perror("open");
-		exit(errno);
-	}
-
-	while (1) { // led blink 
-		write(file, &buff_write, 16);
-		read(file, &buff_read, 16);
-		printf("read buff : [0]: %d - [1]: %d - [2]: %d - [3]: %d\n", buff_read[0], buff_read[1], buff_read[2],buff_read[3] );
-		sleep(1);
-		
-		write(file, &buff_write[1], 16);
-		read(file, &buff_read, 16);
-		printf("read buff : [0]: %d - [1]: %d - [2]: %d - [3]: %d\n", buff_read[0], buff_read[1], buff_read[2],buff_read[3] );
-		sleep(1);
-	}
-
-	return 0;
+   int i;
+   int fd = open("/dev/ledKZ2", O_RDWR);
+   if (fd < 0) {
+      fprintf(stderr, "Erreur d'ouverture du pilote LED et Boutons\n");
+      exit(1);
+   }
+   for( i = 0; i < NBLED; i ++) {
+      led[i] = '0';
+   }
+   do { 
+      led[0] = (led[0] == '0') ? '1' : '0';
+      write( fd, led, NBLED);
+      sleep( 1);
+      read( fd, bp, 1);
+   } while (bp[0] == '1');
+   return 0;
 }
 ``` 
 ### Conclusion
 
-On a réussit à créer notre driver, à l'utiliser pour faire clignoter les LEDs et lire la valeur de celles-ci. Aussi, on a essayé de lire la valeur du bouton de la même manière (lire le registre GPLEV0). Cependant, la valeur du bouton n'est pas mise à jour dans le registre GPLEV0 :(
-
+Après quelques heures de debug, on s'est rendu compte qu'il fallait rajouter le mot clé `volatile *gpio_regs` pour que la valeur instantanée des registres ne soit pas optimisée par le compilateur. Ainsi, on a réussit à créer notre driver, à l'utiliser pour faire clignoter les LEDs et lire la valeur du bouton. 

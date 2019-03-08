@@ -2,7 +2,7 @@ CARD 		    ?= 25
 ROUTER          = peri
 LOGIN           = kadi-zhuang
 LAB             = lab3
-USER    		= zhuang
+USER    		= kadi
 
 FILE           ?= ledKZ2.ko
 MODULE 			= ledKZ2

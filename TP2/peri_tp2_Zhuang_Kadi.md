@@ -116,7 +116,7 @@ void loop_led(struct GPIO_t *led) {
 
 ###### Variation de LED dépendant de la photorésistance
 
-Le souçis avec cette implémentation est que lorsque la période change (la valeur de photorésistance change), le nombre de période depuis le dernier appel à `waitFor()` n'est plus cohérent.
+Le soucis avec cette implémentation est que lorsque la période change (la valeur de photorésistance change), le nombre de période depuis le dernier appel à `waitFor()` n'est plus cohérent.
 
 Une résolution est d'avoir une période fixe et un compteur qui dépend de la photorésistance. 
   - Si le compteur arrive à 0, on change le state(ON/OFF) de la LED
