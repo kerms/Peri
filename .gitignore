@@ -7,6 +7,12 @@ Cours/
 *.ko
 *.x
 *.out
+*.mod
+*.o.cmd
+*.ko.cmd
+*.order
+*.symvers
+*.mod.c
 
 2017-2018/
 
