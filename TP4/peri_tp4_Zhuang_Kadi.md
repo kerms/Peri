@@ -127,12 +127,12 @@ On crée un nouveau fichier `lcd_driver.c` qui reprend les bases du TP3 et du fi
 
 En mode noyau on n'a pas besoin de faire un `mmap` contrairement au mode user.
 
-A faire attention de mettre l'adresse dans le driver différament qu'en mode USER :
+A faire attention de mettre l'adresse dans le driver différemment qu'en mode USER :
 ```cpp
 // mode noyau
 volatile *gpio_regs = (struct gpio_s *)__io_address(GPIO_BASE);
 ```
-sinon cela produirait des erreurs du type 
+sinon cela produirait des erreurs de type 
 ```
 essage from syslogd@raspberrypi at Jun  2 06:25:36 ...
  kernel:[   61.934620] 3f20: b6f1a000 b6ed8948 00000080 c000eb44 d8022000 00000000 d8023fa4 d8023f48
@@ -147,7 +147,7 @@ Message from syslogd@raspberrypi at Jun  2 06:25:36 ...
  kernel:[   61.973595] 3f80: 00000011 00000000 00000000 bea4c70c 00000000 b8975fc8 00000000 d8023fa8
 
  ```
- Le module sera alors bloqué, et impossible de faire rmmod.
+ Le module serait alors bloqué, et impossible de faire rmmod.
 
 Puis on initialise la lcd dans le init du module.
 
@@ -156,7 +156,7 @@ Puis on initialise la lcd dans le init du module.
 
 Ce qui nous mène à implémenter la fonction d'`ioctl`.
 
-Mais avant il faut définir des fonctions spéciales de type `_IO`, le mieu est de mettre ces définitions dans un fichier .h qui sera utiliser par programme utilisateur.
+Mais avant il faut définir des fonctions spéciales de type `_IO`, le mieux est de mettre ces définitions dans un fichier .h qui sera aussi utilisé par le programme utilisateur.
 
 Dans notre cas :
 
@@ -165,7 +165,7 @@ Dans notre cas :
 #define LCDIOCT_SETXY _IOW(MAGIC, 2, struct Pos *)
 ```
 
-Puis on les utilises comme des numéros de commandes :
+Puis on les utilise comme des numéros de commande :
 
 ```c
 static long my_ioctl(struct file *filep,unsigned int cmd, unsigned long arg) {
@@ -185,7 +185,7 @@ static long my_ioctl(struct file *filep,unsigned int cmd, unsigned long arg) {
 }
 ```
 
-Pour permettre l'écriture via la commande `echo`, on doit aussi définir le handler `.write`, qui ne fait simplement écrire dans le lcd.
+Pour permettre l'écriture via la commande `echo`, on doit aussi définir le handler `.write`, qui ne fait simplement qu'écrire dans le lcd.
 
 ```c
 static ssize_t 
@@ -213,4 +213,23 @@ write_lcd_kz(struct file *file, const char *buf, size_t count, loff_t *ppos) {
 
     return count;
 }
+```
+Le code user que nous avons utilisé pour tester notre module est:
+
+```cpp
+#define SYMBOL "\xb6\xb2\xd9\xdd & \xd4\xbd\xcf" // Pour ecrire en japonnais ;)
+
+int main(int argc, char const *argv[])
+{
+	struct Pos p;
+	p.x = 5;
+	p.y = 2;
+	int fd = open("/dev/lcd_driverkz",O_RDWR);
+	ioctl(fd, LCDIOCT_SETXY, &p);
+	write(fd, SYMBOL, strlen(SYMBOL));
+	close(fd);
+	
+	return 0;
+}
+
 ```

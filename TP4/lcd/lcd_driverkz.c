@@ -33,7 +33,6 @@ struct gpio_s {
     uint32_t test[1];
 } volatile *gpio_regs = (struct gpio_s *)__io_address(GPIO_BASE);
 
-static char buff[80];
 static const int lines[] = { 0, 0x40, 0x14, 0x54 };
 static struct Pos current_pos = {0, 0};
 static int count = 0;
@@ -105,7 +104,7 @@ void lcd_data(int character)
 {
     gpio_write(RS, 1);
     lcd_write4bits(character);
-    udelay(100);
+    udelay(50);
 }
 
 void lcd_clear(void)
@@ -140,6 +139,20 @@ void lcd_set_cursor(int x, int y)
     current_pos.y = y;
 }
 
+void lcd_set_custom(int num, char buff[8]) {
+    int i;
+
+    if (num > 8 || num < 8) {
+        printk(KERN_DEBUG "KY - custom : error num = %d\n", num);
+        return;
+    }
+    lcd_command(LCD_SETCGRAMADDR + num );
+    for ( i= 0; i < 8; ++i)
+    {
+        lcd_data(buff[i]);
+    }
+}
+
 static int 
 open_lcd_kz(struct inode *inode, struct file *file) {
     count ++;
@@ -150,27 +163,22 @@ open_lcd_kz(struct inode *inode, struct file *file) {
 
 static ssize_t 
 write_lcd_kz(struct file *file, const char *buf, size_t count, loff_t *ppos) {
-	unsigned int nblines = (count-1)/20;
-	unsigned int nbchar_left = count % 20;
-	int i, line;
+	int i = 0, line = 0;
 
-	// ecrire les lignes n-1 qui sont completes
-	for (i = 0, line = 0; line < nblines; ++line)
-	{
-		lcd_command(LCD_SETDDRAMADDR + lines[line]);
-		for (; i < 20*(line+1); ++i)
-		{
-			lcd_data(buf[i]);
-		}
-	}
+    line = current_pos.y;
 
-    printk(KERN_DEBUG "KY - lines = %d\n", line);
-	// ecrire la ligne restante
-	lcd_command(LCD_SETDDRAMADDR + lines[line]);
-	for (; i < nbchar_left-1 + (line)*20; ++i)
-	{
-		lcd_data(buf[i]);
-	}
+    lcd_command(LCD_SETDDRAMADDR + current_pos.x + lines[line%4] );
+
+    for ( ; i < count; ++i)
+    {
+        if ( current_pos.x % 20 == 0 ) {
+            current_pos.x = 0;
+            current_pos.y = (current_pos.y+1) % 4;
+            lcd_command(LCD_SETDDRAMADDR + lines[line]);
+        }
+        lcd_data(buf[i]);
+        ++current_pos.x;
+    }
 
     return count;
 }
@@ -184,17 +192,29 @@ release_lcd_kz(struct inode *inode, struct file *file) {
 
 static long my_ioctl(struct file *filep,unsigned int cmd, unsigned long arg) {
 	struct Pos p;
+    struct Text t;
+    struct CusChar c;
+    int sz, err;
     switch(cmd)
     {
   		case LCDIOCT_CLEAR :
 	      	lcd_clear();
 	      	return 0;
     	case  LCDIOCT_SETXY :
-	        copy_from_user(&p, (struct Pos*)arg, sizeof(struct Pos));
+	        err = copy_from_user(&p, (struct Pos*)arg, sizeof(struct Pos));
 	        lcd_set_cursor(p.x, p.y);
-      	return 0;
+      	    return 0;
+        case LCDIOCT_SETCUSTOM:
+            err = copy_from_user(&c, (struct CusChar*)arg, sizeof(struct CusChar));
+            lcd_set_custom(c.num, c.str);
+            return 0;
+        case LCDIOCT_WRITE :
+            err = copy_from_user(&t, (struct Text*)arg, sizeof(struct Text));
+            sz = t.sz;
+            err = copy_from_user(&t, (struct Text*)arg, sizeof(struct Text) + t.sz);
+            return write_lcd_kz(NULL, t.str, sz, NULL);
         default :
-      return -EINVAL;     /* Invalid argument   */
+        return -EINVAL;     /* Invalid argument   */
     }
 }
 

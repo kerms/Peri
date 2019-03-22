@@ -16,10 +16,24 @@ struct Pos
     int y;
 };
 
+struct Text
+{
+	int sz;
+	char str[0];
+};
+
+struct CusChar
+{
+	int num;
+	char str[8];
+};
+
 
 #define MAGIC 220
-#define LCDIOCT_CLEAR _IO(MAGIC, 1)
-#define LCDIOCT_SETXY _IOW(MAGIC, 2, struct Pos *)
+#define LCDIOCT_CLEAR 		_IO(MAGIC, 1)
+#define LCDIOCT_SETXY 		_IOW(MAGIC, 2, struct Pos *)
+#define LCDIOCT_SETCUSTOM 	_IOW(MAGIC, 3, struct CusChar *)
+#define LCDIOCT_WRITE 		_IOW(MAGIC, 4, struct Text *)
 
 #define GPIO_INPUT  0
 #define GPIO_OUTPUT 1
