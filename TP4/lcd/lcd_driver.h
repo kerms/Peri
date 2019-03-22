@@ -24,26 +24,7 @@ struct Pos
 #define GPIO_INPUT  0
 #define GPIO_OUTPUT 1
 
-#define RPI_BLOCK_SIZE  0xB4
-#define RPI_GPIO_BASE   0x20200000
-
-struct gpio_s {
-    uint32_t gpfsel[7];
-    uint32_t gpset[3];
-    uint32_t gpclr[3];
-    uint32_t gplev[3];
-    uint32_t gpeds[3];
-    uint32_t gpren[3];
-    uint32_t gpfen[3];
-    uint32_t gphen[3];
-    uint32_t gplen[3];
-    uint32_t gparen[3];
-    uint32_t gpafen[3];
-    uint32_t gppud[1];
-    uint32_t gppudclk[3];
-    uint32_t test[1];
-};
-volatile struct gpio_s *gpio_regs;
+//volatile struct gpio_s *gpio_regs;
 
 /*******************************************************************************
  * LCD's Instructions ( source = doc )

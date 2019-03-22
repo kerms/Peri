@@ -2,8 +2,8 @@
 RPI?=26
 DIR?=kadi-zhuang
 APP=lcd_user
-USER?= zhuang
-MODULE ?= lcd_driver
+USER?= ${USER}
+MODULE ?= lcd_driverkz
 
 #CFLAGS=-Wall -Wfatal-errors -O2
 #LDFLAGS=-static -L$(LIB) -lgpio

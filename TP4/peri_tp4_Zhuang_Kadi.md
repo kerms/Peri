@@ -125,10 +125,31 @@ for (i = 1; i < argc; ++i)
 
 On crée un nouveau fichier `lcd_driver.c` qui reprend les bases du TP3 et du fichier `lcd_user.c`.
 
-Laquelle on met les initialisation dans l'init du module.
-
 En mode noyau on n'a pas besoin de faire un `mmap` contrairement au mode user.
 
+A faire attention de mettre l'adresse dans le driver différament qu'en mode USER :
+```cpp
+// mode noyau
+volatile *gpio_regs = (struct gpio_s *)__io_address(GPIO_BASE);
+```
+sinon cela produirait des erreurs du type 
+```
+essage from syslogd@raspberrypi at Jun  2 06:25:36 ...
+ kernel:[   61.934620] 3f20: b6f1a000 b6ed8948 00000080 c000eb44 d8022000 00000000 d8023fa4 d8023f48
+
+Message from syslogd@raspberrypi at Jun  2 06:25:36 ...
+ kernel:[   61.947620] 3f40: c00899d4 c00879d8 dde7c000 0000215f dde7cf70 dde7ce11 dde7df18 000009ec
+
+Message from syslogd@raspberrypi at Jun  2 06:25:36 ...
+ kernel:[   61.960617] 3f60: 00000dcc 00000000 00000000 00000000 00000020 00000021 00000018 00000015
+
+Message from syslogd@raspberrypi at Jun  2 06:25:36 ...
+ kernel:[   61.973595] 3f80: 00000011 00000000 00000000 bea4c70c 00000000 b8975fc8 00000000 d8023fa8
+
+ ```
+ Le module sera alors bloqué, et impossible de faire rmmod.
+
+Puis on initialise la lcd dans le init du module.
 
 ###### Remarque
 `.ioctl` ne marche pas, il faut le remplacer par `.unlocked_ioctl`. Il faut alors modifier le prototypage de la nouvelle fonction (les deux `ioctl` n'ont pas le même prototype).

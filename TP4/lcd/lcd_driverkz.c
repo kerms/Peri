@@ -13,12 +13,32 @@ MODULE_AUTHOR("Charlie, 2015");
 MODULE_DESCRIPTION("Module, aussitot insere, aussitot efface");
 
 
+#define RPI_BLOCK_SIZE  0xB4
+#define RPI_GPIO_BASE   0x20200000
+
+struct gpio_s {
+    uint32_t gpfsel[7];
+    uint32_t gpset[3];
+    uint32_t gpclr[3];
+    uint32_t gplev[3];
+    uint32_t gpeds[3];
+    uint32_t gpren[3];
+    uint32_t gpfen[3];
+    uint32_t gphen[3];
+    uint32_t gplen[3];
+    uint32_t gparen[3];
+    uint32_t gpafen[3];
+    uint32_t gppud[1];
+    uint32_t gppudclk[3];
+    uint32_t test[1];
+} volatile *gpio_regs = (struct gpio_s *)__io_address(GPIO_BASE);
+
 static char buff[80];
 static const int lines[] = { 0, 0x40, 0x14, 0x54 };
 static struct Pos current_pos = {0, 0};
 static int count = 0;
 
-#define MOD_NAME "lcd_kz"
+#define MOD_NAME "lcd_driverkz"
 
 
 void gpio_write(int gpio, int value)
@@ -85,7 +105,7 @@ void lcd_data(int character)
 {
     gpio_write(RS, 1);
     lcd_write4bits(character);
-    udelay(37);
+    udelay(100);
 }
 
 void lcd_clear(void)
@@ -138,15 +158,16 @@ write_lcd_kz(struct file *file, const char *buf, size_t count, loff_t *ppos) {
 	for (i = 0, line = 0; line < nblines; ++line)
 	{
 		lcd_command(LCD_SETDDRAMADDR + lines[line]);
-		for (; i < 20; ++i)
+		for (; i < 20*(line+1); ++i)
 		{
 			lcd_data(buf[i]);
 		}
 	}
 
+    printk(KERN_DEBUG "KY - lines = %d\n", line);
 	// ecrire la ligne restante
 	lcd_command(LCD_SETDDRAMADDR + lines[line]);
-	for (; i < nbchar_left; ++i)
+	for (; i < nbchar_left-1 + (line)*20; ++i)
 	{
 		lcd_data(buf[i]);
 	}
@@ -192,16 +213,18 @@ static int __init mon_module_init(void)
   	}
 
     /* Setting up GPIOs to output */
+    
     gpio_config(RS, GPIO_OUTPUT);
     gpio_config(E,  GPIO_OUTPUT);
     gpio_config(D4, GPIO_OUTPUT);
     gpio_config(D5, GPIO_OUTPUT);
     gpio_config(D6, GPIO_OUTPUT);
     gpio_config(D7, GPIO_OUTPUT);
-
-    /* initialization */
+    
+    
     lcd_init();
     lcd_clear();
+	
 
    	printk(KERN_DEBUG "KY - module "MOD_NAME" added!\n");
    	return 0;
