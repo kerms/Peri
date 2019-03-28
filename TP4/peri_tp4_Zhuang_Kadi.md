@@ -18,8 +18,7 @@ lcd_command(0b00110011);
 lcd_command(0b00110010);
 ```
 
-- Pour afficher un caractère, on écrit `1` dans `RS`. Ensuite, on met le curseur : LCD_SETDDRAMADDR + offset,
-et on envoie l'octet avec `lcd_write4bits`.
+- Pour afficher un caractère, on écrit `1` dans `RS`. Ensuite, on met le curseur : `LCD_SETDDRAMADDR + offset`, et on envoie l'octet avec `lcd_write4bits`.
 
 - Pour lancer une commande telle que l'effacement de l'écran, le déplacement du curseur ..., on écrit `0` dans `RS`, puis on envoie l'octet correspandant à la commande.
 
@@ -43,14 +42,15 @@ Le mot clé `volatile` sert à indiquer au compilateur de ne pas optimiser les a
 
 ##### Q2
 
-O_RDWR : ouvrire en lecture et écriture \
-O_SYNC : bloquant jusqu'à la terminaison des accès mémoire\
-PROT_READ | PROT_WRITE : donner la permission lecture et écriture\
-MAP_SHARED : partage la mémoire avec les autres processus.
+Les flags dans `open` et `mmap` définissent les droits d'accès.
+`O_RDWR` : ouvrire en lecture et écriture \
+`O_SYNC` : bloquant jusqu'à la terminaison des accès mémoire\
+`PROT_READ | PROT_WRITE` : donner la permission lecture et écriture\
+`MAP_SHARED` : partage la mémoire avec les autres processus.
 
 ##### Q3
 
-Il faudrait bien libérer les ressources allouées avec mmap.
+La fonction `munmap` permet de libérer les ressources allouées avec `mmap`.
 
 ##### Q4
 
