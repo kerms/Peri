@@ -23,7 +23,8 @@ Portée (environ) 	10 m
 ```
 Pour plus de details sur ce protocole, cliquez [ici](https://connect.ed-diamond.com/MISC/MISC-086/Tout-tout-tout-vous-saurez-tout-sur-le-ZigBee "ZigBee")
 
-** FUN FACT ** 
+**FUN FACT**
+ 
 La communication chez les abeilles permet la cohésion de la ruche, la reconnaissance entre individus, la diffusion des alertes, mais également le repérage des sources de nourriture, d'eau, de résines, ou des emplacements possibles d'implantation. Elle est basée sur des échanges tactiles à l'aide des antennes et sur un comportement remarquable: les danses des abeilles en zigzag. C'est de cette dance que le ZigBee tient son nom. 
 
 
