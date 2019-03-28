@@ -43,6 +43,7 @@ Le mot clé `volatile` sert à indiquer au compilateur de ne pas optimiser les a
 ##### Q2
 
 Les flags dans `open` et `mmap` définissent les droits d'accès.
+
 `O_RDWR` : ouvrire en lecture et écriture \
 `O_SYNC` : bloquant jusqu'à la terminaison des accès mémoire\
 `PROT_READ | PROT_WRITE` : donner la permission lecture et écriture\
