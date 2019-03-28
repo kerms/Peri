@@ -11,91 +11,94 @@ Kailun ZHUANG
 
 - On peut utiliser la fonction `gpio_write` pour écrire des valeurs dans les registres de l'écran LCD.
 
-Pour initialiser\
-- On envoie respectivement: 
-	- 0011
-	- 0011
-	
-	- 0011
-	- 0010
+- Pour réaliser l'initialisation, en envoie les valeurs suivantes (en mode 4 bits) :
+ 
+```cpp
+lcd_command(0b00110011);
+lcd_command(0b00110010);
+```
 
-Fonction set
-	- 0010
-	- 1000
+- Pour afficher un caractère, on écrit `1` dans `RS`. Ensuite, on met le curseur : LCD_SETDDRAMADDR + offset,
+et on envoie l'octet avec `lcd_write4bits`.
 
-Display control
-	- 0000
-	- 1100
+- Pour lancer une commande telle que l'effacement de l'écran, le déplacement du curseur ..., on écrit `0` dans `RS`, puis on envoie l'octet correspandant à la commande.
 
-Entry mode set
-	- 0000
-	- 0100
-
-Display clear
-	- 0000
-	- 0001
-
-Affichage d'un caractère :\
-On met le cursor : LCD_SETDDRAMADDR + offset, \
-Puis envoyer l'octet avec `lcd_write4bits`.
-
-Pour lancer une commande : \
-On écrit 0 dans `RS`, envoyer l'octet de commande correspondant.
-
+Exemples de commandes et leurs octets:
+```
+LCD_CLEARDISPLAY        0b00000001
+LCD_RETURNHOME          0b00000010
+LCD_ENTRYMODESET        0b00000100
+LCD_DISPLAYCONTROL      0b00001000
+LCD_CURSORSHIFT         0b00010000
+LCD_FUNCTIONSET         0b00100000
+LCD_SETCGRAMADDR        0b01000000
+LCD_SETDDRAMADDR        0b10000000
+```
 ### Fonctionnement de l'écran et fonctions de base
 
 
 ##### Q1
+
 Le mot clé `volatile` sert à indiquer au compilateur de ne pas optimiser les accès à la variable avec laquelle il est utilisé.
 
 ##### Q2
+
 O_RDWR : ouvrire en lecture et écriture \
 O_SYNC : bloquant jusqu'à la terminaison des accès mémoire\
 PROT_READ | PROT_WRITE : donner la permission lecture et écriture\
 MAP_SHARED : partage la mémoire avec les autres processus.
 
 ##### Q3
+
 Il faudrait bien libérer les ressources allouées avec mmap.
 
 ##### Q4
-//TODO
 
-LCD_FUNCTIONSET         0b00100000
-LCD_FS_2LINE            0b00001000
-LCD_FS_4BITMODE         0b00000000
-LCD_FS_5x8DOTS          0b00000000
-						=0010 
-						 1000
+Les masques servent à configurer l'affichage:
 
-LCD_DISPLAYCONTROL      0b00001000
-LCD_DC_DISPLAYON        0b00000100
-LCD_DC_CURSOROFF        0b00000000
-   						=0000 
-   						 1100
-
-LCD_ENTRYMODESET        0b00000100
-LCD_EM_RIGHT            0b00000000
-LCD_EM_DISPLAYNOSHIFT   0b00000000
-						=0000 
-						 0100
-
-
-LCD_CLEARDISPLAY        0b00000001
-						=0000
-						 0001
-LCD_RETURNHOME          0b00000010
- 						=0000
- 						 0010
+- Pour ajuster l'affichage 
+```
+LCD_EM_RIGHT
+LCD_EM_LEFT 
+LCD_EM_DISPLAYSHIFT
+LCD_EM_DISPLAYNOSHIFT
+```
+- Pour contrôler l'activation/désactivation de l'affichage (écran + curseur)
+```
+LCD_DC_DISPLAYON
+LCD_DC_DISPLAYOFF
+LCD_DC_CURSORON 
+LCD_DC_CURSOROFF
+LCD_DC_BLINKON 
+LCD_DC_BLINKOFF
+```
+- Pour afficher le déplacement sur l'écran
+```
+LCD_CS_DISPLAYMOVE
+LCD_CS_CURSORMOVE
+LCD_CS_MOVERIGHT
+LCD_CS_MOVELEFT
+```
+- Pour définir la fonction
+```
+LCD_FS_8BITMODE 
+LCD_FS_4BITMODE
+LCD_FS_2LINE
+LCD_FS_1LINE
+LCD_FS_5x10DOTS
+LCD_FS_5x8DOTS
+```
 
 ##### Q5
+
 La fonction `lcd_message` remplit un tableau de taille 4 x 20.\
 Elle écrit sur la ligne suivante si elle arrive au bout de la ligne, dans la limite de 80 caractères.
 
 2. Positionnement du curseur
 
-```c
+```cpp
 void lcd_set_cursor(int x, int y)
-{   
+{
 	// condition invalide
     if (x > 19 || y > 3 || x < 0 || y < 0) {
         printf("bad cursor\n");
@@ -104,12 +107,11 @@ void lcd_set_cursor(int x, int y)
     int a[] = { 0, 0x40, 0x14, 0x54 };
     lcd_command(LCD_SETDDRAMADDR + a[y] + x);
 }
-
 ```
 
 3. Affichage des paramètres sur le LCD
 
-```c
+```cpp
 int i, k;
 for (i = 1; i < argc; ++i)
 {
@@ -127,27 +129,20 @@ On crée un nouveau fichier `lcd_driver.c` qui reprend les bases du TP3 et du fi
 
 En mode noyau on n'a pas besoin de faire un `mmap` contrairement au mode user.
 
-A faire attention de mettre l'adresse dans le driver différemment qu'en mode USER :
+Il faut faire attention de mettre l'adresse dans le driver différemment qu'en mode USER :
+
 ```cpp
-// mode noyau
+/* mode noyau */
 volatile *gpio_regs = (struct gpio_s *)__io_address(GPIO_BASE);
 ```
 sinon cela produirait des erreurs de type 
-```
-essage from syslogd@raspberrypi at Jun  2 06:25:36 ...
- kernel:[   61.934620] 3f20: b6f1a000 b6ed8948 00000080 c000eb44 d8022000 00000000 d8023fa4 d8023f48
 
-Message from syslogd@raspberrypi at Jun  2 06:25:36 ...
- kernel:[   61.947620] 3f40: c00899d4 c00879d8 dde7c000 0000215f dde7cf70 dde7ce11 dde7df18 000009ec
-
+```bash
 Message from syslogd@raspberrypi at Jun  2 06:25:36 ...
  kernel:[   61.960617] 3f60: 00000dcc 00000000 00000000 00000000 00000020 00000021 00000018 00000015
+```
 
-Message from syslogd@raspberrypi at Jun  2 06:25:36 ...
- kernel:[   61.973595] 3f80: 00000011 00000000 00000000 bea4c70c 00000000 b8975fc8 00000000 d8023fa8
-
- ```
- Le module serait alors bloqué, et impossible de faire rmmod.
+Le module serait alors bloqué, et impossible de faire rmmod.
 
 Puis on initialise la lcd dans le init du module.
 
@@ -156,7 +151,7 @@ Puis on initialise la lcd dans le init du module.
 
 Ce qui nous mène à implémenter la fonction d'`ioctl`.
 
-Mais avant il faut définir des fonctions spéciales de type `_IO`, le mieux est de mettre ces définitions dans un fichier .h qui sera aussi utilisé par le programme utilisateur.
+Mais avant, il faut définir des fonctions spéciales de type `_IO`, le mieux est de mettre ces définitions dans un fichier .h qui sera aussi utilisé par le programme utilisateur.
 
 Dans notre cas :
 
@@ -214,10 +209,10 @@ write_lcd_kz(struct file *file, const char *buf, size_t count, loff_t *ppos) {
     return count;
 }
 ```
-Le code user que nous avons utilisé pour tester notre module est:
+Le code user qu'on a utilisé pour tester notre module est:
 
 ```cpp
-#define SYMBOL "\xb6\xb2\xd9\xdd & \xd4\xbd\xcf" // Pour ecrire en japonnais ;)
+#define SYMBOL "\xb6\xb2\xd9\xdd & \xd4\xbd\xcf" /* Kailun & Yasma en japonais :) */
 
 int main(int argc, char const *argv[])
 {
@@ -231,5 +226,4 @@ int main(int argc, char const *argv[])
 	
 	return 0;
 }
-
 ```
