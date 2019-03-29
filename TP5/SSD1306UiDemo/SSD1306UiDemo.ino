@@ -106,12 +106,12 @@ void drawFontFaceDemo() {
 }
 
 void setup() {
-    /* Initialise les broches */
+  /* Init ultra son */
   pinMode(TRIGGER_PIN, OUTPUT);
   digitalWrite(TRIGGER_PIN, LOW); // La broche TRIGGER doit être à LOW au repos
   pinMode(ECHO_PIN, INPUT);
 
-  
+  /* Init OLED */
   pinMode(16,OUTPUT);
   digitalWrite(16, LOW);    // set GPIO16 low to reset OLED
   delay(50); 
@@ -126,9 +126,9 @@ void setup() {
 	// run it in 160Mhz mode or just set it to 30 fps
   display.init();
   display.flipScreenVertically();
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_10);
   ui.setTargetFPS(60);
-
 }
 
 
@@ -139,18 +139,20 @@ void loop() {
   digitalWrite(TRIGGER_PIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIGGER_PIN, LOW);
-  // draw the current demo method
+
     /* 2. Mesure le temps entre l'envoi de l'impulsion ultrasonique et son écho (si il existe) */
   long measure = pulseIn(ECHO_PIN, HIGH, MEASURE_TIMEOUT);
    
   /* 3. Calcul la distance à partir du temps mesuré */
   float distance_mm = measure / 2.0 * SOUND_SPEED;
   
-  //display.setTextAlignment(TEXT_ALIGN_LEFT);
+  /* 4. affichage sur OLED */
   display.drawString(0, 0,  "Distance: ");
   display.drawString(0, 10, String(distance_mm) +  "mm");
   display.drawString(0, 20, String(distance_mm / 10.0, 2) + "cm");
   display.drawString(0, 30, String(distance_mm / 1000.0, 2) + "m");
   display.display();
-  delay(1000);
+
+  /* limite le nombre de rafraichissement */
+  delay(500);
 }

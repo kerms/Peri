@@ -70,11 +70,11 @@ Maintenant, on voit tous les réseaux wifi disponibles (ex: eduroam, eduspot...)
 
 On voit les réseaux bluetooth.
 
-#### Programmes de test sur ordinateur perso
+#### Programmes de test sur ordinateur perso (WINDOWS)
 
 Blink, SCAN-WIFI et SCAN-
 
-###### OLED DEMO sur ordi perso
+###### OLED DEMO sur ordi perso 
 
 On a utiliser cette [librairie](https://github.com/osresearch/esp32-ttgo "github") :
 
@@ -86,3 +86,67 @@ Cependant, on a eu quelques erreurs de compilation, en regardant en détail, on 
 Puis une erreur dans une fonction qui ne retourne rien, alors que le type de retour est un `bool`.
 
 Après ces corrections, la démo s'affiche sur notre carte.
+
+###### Combinaison OLED et capteur ultra son 
+
+Afin d'afficher les valeurs mesurées par le capteur sur l'écran OLED, on a "fusionné" le code de la démo OLED et un code tuto du capteur ultra son de arduino [trouvé ici](https://www.carnetdumaker.net/articles/mesurer-une-distance-avec-un-capteur-ultrason-hc-sr04-et-une-carte-arduino-genuino/ "Tuto ultrason").
+
+```cpp
+void setup() {
+  /* Init ultra son */
+  pinMode(TRIGGER_PIN, OUTPUT);
+  digitalWrite(TRIGGER_PIN, LOW); // La broche TRIGGER doit être à LOW au repos
+  pinMode(ECHO_PIN, INPUT);
+
+  /* Init OLED */
+  pinMode(16,OUTPUT);
+  digitalWrite(16, LOW);    // set GPIO16 low to reset OLED
+  delay(50); 
+  digitalWrite(16, HIGH); // while OLED is running, must set GPIO16 in high
+  
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println();
+
+	// The ESP is capable of rendering 60fps in 80Mhz mode
+	// but that won't give you much time for anything else
+	// run it in 160Mhz mode or just set it to 30 fps
+  display.init();
+  display.flipScreenVertically();
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  display.setFont(ArialMT_Plain_10);
+  ui.setTargetFPS(60);
+}
+
+
+void loop() {
+  // clear the display
+  display.clear();
+    /* 1. Lance une mesure de distance en envoyant une impulsion HIGH de 10µs sur la broche TRIGGER */
+  digitalWrite(TRIGGER_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIGGER_PIN, LOW);
+
+    /* 2. Mesure le temps entre l'envoi de l'impulsion ultrasonique et son écho (si il existe) */
+  long measure = pulseIn(ECHO_PIN, HIGH, MEASURE_TIMEOUT);
+   
+  /* 3. Calcul la distance à partir du temps mesuré */
+  float distance_mm = measure / 2.0 * SOUND_SPEED;
+  
+  /* 4. affichage sur OLED */
+  display.drawString(0, 0,  "Distance: ");
+  display.drawString(0, 10, String(distance_mm) +  "mm");
+  display.drawString(0, 20, String(distance_mm / 10.0, 2) + "cm");
+  display.drawString(0, 30, String(distance_mm / 1000.0, 2) + "m");
+  display.display();
+
+  /* limite le nombre de rafraichissement */
+  delay(500);
+}
+
+
+``` 
+
+Au début, le capteur ultrason n'était pas bien connecté à l'ESP32. En effet, il y avait un problème avec le cablage physique. Donc, on a refait les connexion utilisant des fils femelle-femelle (sans la breadboard). Ainsi, on affichait bien la distance.
+
+En fin, le code, qu'on a présenté, permet d'afficher la distance mesurée par le capteur directement sur lécran OLED.
