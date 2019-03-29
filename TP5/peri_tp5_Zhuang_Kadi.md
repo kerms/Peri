@@ -9,20 +9,24 @@ Kailun ZHUANG
 
 ### Protocole de communication sans-fil : ZigBee
 
-Le ZigBee est un protocole de communication sans-fil "low-cost" à courte portée et à faible consommation énergétique. Il est basé sur la norme IEEE 802.15.4. Il est principalement utilisé dans les environnements embarqués.
+Le ZigBee est un protocole de communication sans-fil à courte portée et à faible consommation énergétique. Il est basé sur la norme IEEE 802.15.4. Il est principalement utilisé dans les environnements embarqués.
 
 
 Caractéristiques :
 
 ```
-IEEE 					802.15.4
-Besoins mémoire 		4-32 ko 
+IEEE 			802.15.4
+Besoins mémoire 	4-32 ko 
 Autonomie avec pile 	Années 
-Nombre de nœuds 		65 000+ 	
-Vitesse de transfert 	20-250 kb/s 	
-Portée (environ) 		10 m 
+Nombre de nœuds 	65 000+
+Vitesse de transfert 	20-250 kb/s
+Portée (environ) 	10 m 
 ```
+Pour plus de details sur ce protocole, cliquez [ici](https://connect.ed-diamond.com/MISC/MISC-086/Tout-tout-tout-vous-saurez-tout-sur-le-ZigBee "ZigBee")
 
+**FUN FACT**
+ 
+La communication chez les abeilles permet la cohésion de la ruche, la reconnaissance entre individus, la diffusion des alertes, mais également le repérage des sources de nourriture, d'eau, de résines, ou des emplacements possibles d'implantation. Elle est basée sur des échanges tactiles à l'aide des antennes et sur un comportement remarquable: les danses des abeilles en zigzag. C'est de cette dance que le ZigBee tient son nom. 
 
 
 ### Capteur d'étirement
