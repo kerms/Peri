@@ -13,6 +13,7 @@ Le ZigBee est un protocole de communication sans-fil "low-cost" à courte porté
 
 
 Caractéristiques :
+
 ```
 IEEE 					802.15.4
 Besoins mémoire 		4-32 ko 
@@ -34,7 +35,7 @@ La valeur de la résistance varie selon l'état du cordon.
 
 L'idée est lorsqu'on tire sur le cordon, la résistance augmente, puis selon la valeur de la résistance, on peut déterminer la longueur d'étirement.
 
-Pour installer ce capteur, il suffit à priori de mettre deux connecteur sur les deux bouts du cordon. Puis relier ces connecteurs au circuit.
+Pour installer ce capteur, il suffit à priori de mettre deux connecteurs sur les deux bouts du cordon. Puis relier ces connecteurs au circuit.
 
 ###### Remarque
 
@@ -65,6 +66,19 @@ Maintenant, on voit tous les réseaux wifi disponibles (ex: eduroam, eduspot...)
 
 On voit les réseaux bluetooth.
 
-###### OLED DEMO
+#### Programmes de test sur ordinateur perso
+
+Blink, SCAN-WIFI et SCAN-
+
+###### OLED DEMO sur ordi perso
 
 On a utiliser cette [librairie](https://github.com/osresearch/esp32-ttgo "github") :
+
+Cependant, on a eu quelques erreurs de compilation, en regardant en détail, on remarque que le compilateur a considéré certains warnings comme des erreurs : 
+
+	- uninitiliazed variable
+	- statement missing in switch-case
+
+Puis une erreur dans une fonction qui ne retourne rien, alors que le type de retour est un `bool`.
+
+Après ces corrections, la démo s'affiche sur notre carte.
