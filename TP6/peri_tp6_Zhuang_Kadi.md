@@ -10,10 +10,10 @@ Kailun ZHUANG
 Le BLE est composé de 
 
   - Service
-  - n Charactéristique
-  - n Description par caractéristique
+  - n Charactéristiques
+  - n Descriptions par caractéristique
 
-Chacun possède un UUID qui le permet de lui identifier et accéder aux différents services.
+Chacun possède un UUID qui lui permet de l'identifier et accéder aux différents services.
 
 [source](https://randomnerdtutorials.com/esp32-bluetooth-low-energy-ble-arduino-ide/ "BLE arduino")
 
