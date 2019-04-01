@@ -11,7 +11,10 @@
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
 
+/* Target Service ID */
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+
+/* Target Char ID */
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
 void setup() {
@@ -34,15 +37,20 @@ void setup() {
                                          BLECharacteristic::PROPERTY_WRITE
                                        );
 
-  
+  /* Value of characteristic when a client read it 
+   * The value can be changed by recall this function 
+   */
   pCharacteristic->setValue("Hello World !");
 
-  /* Start service */
+  /* Start the service 
+   * A device can have multiple service
+   */
   pService->start();
 
   // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
   
   /* print adver setting*/
+  /* Advertising allows devices to broadcast information defining their intentions. */
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setScanResponse(true);

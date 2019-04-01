@@ -9,15 +9,18 @@
 //#include "BLEScan.h"
 
 // The remote service we wish to connect to.
-static BLEUUID serviceUUID("0000aaa0-0000-1000-8000-aabbccddeeff");
+static BLEUUID serviceUUID("0000180A-0000-1000-8000-00805f9b34fb");
 // The characteristic of the remote service we are interested in.
-static BLEUUID    charUUID("beb5483e-36e1-4688-b7f5-ea07361b26a8");
+static BLEUUID    charUUID("00002A29-0000-1000-8000-00805f9b34fb");
 
+/* Try to connect */
 static boolean doConnect = false;
 static boolean connected = false;
 static boolean doScan = false;
+
+/* host characteristics */
 static BLERemoteCharacteristic* pRemoteCharacteristic;
-static BLEAdvertisedDevice* myDevice;
+static BLEAdvertisedDevice* myDevice; /* host device */
 
 static void notifyCallback(
   BLERemoteCharacteristic* pBLERemoteCharacteristic,
@@ -34,11 +37,12 @@ static void notifyCallback(
 
 class MyClientCallback : public BLEClientCallbacks {
 
-  /* Called when connect */
+  /* Called when try to connect */
   void onConnect(BLEClient* pclient) {
+    Serial.println("onConnect");
   }
 
-  /* Called when disconnect*/
+  /* Called when disconnect */
   void onDisconnect(BLEClient* pclient) {
     connected = false;
     Serial.println("onDisconnect");
@@ -47,11 +51,14 @@ class MyClientCallback : public BLEClientCallbacks {
 
 bool connectToServer() {
     Serial.print("Forming a connection to ");
+    
+    /* Print host MAC addresse */
     Serial.println(myDevice->getAddress().toString().c_str());
     
     BLEClient*  pClient  = BLEDevice::createClient();
     Serial.println(" - Created client");
 
+    /* link to our callback */
     pClient->setClientCallbacks(new MyClientCallback());
 
     // Connect to the remove BLE Server.
@@ -103,15 +110,13 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
     Serial.print("BLE Advertised Device found: ");
     Serial.println(advertisedDevice.toString().c_str());
 
-    // We have found a device, let us now see if it contains the service we are looking for.
+    /* If target service UUID match, we can also check the name or addresse */
     if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
-
-      BLEDevice::getScan()->stop();
+      advertisedDevice.getScan()->stop(); //Scan can be stopped, we found what we are looking for
       myDevice = new BLEAdvertisedDevice(advertisedDevice);
       doConnect = true;
       doScan = true;
-
-    } // Found our server
+    }
   } // onResult
 }; // MyAdvertisedDeviceCallbacks
 
@@ -128,12 +133,10 @@ void setup() {
 
   /* Add callback */
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  pBLEScan->setInterval(1349);
-  pBLEScan->setWindow(449);
 
   /* active scan uses more power, but get results faster */
   pBLEScan->setActiveScan(true);
-  pBLEScan->start(5, false);
+  pBLEScan->start(30);
 } // End of setup.
 
 
@@ -160,9 +163,8 @@ void loop() {
     
     // Set the characteristic's value to be the array of bytes that is actually a string.
     pRemoteCharacteristic->writeValue(newValue.c_str(), newValue.length());
-  }else if(doScan){
-    BLEDevice::getScan()->start(0);  // this is just eample to start scan after disconnect, most likely there is better way to do it in arduino
   }
+
   
   delay(1000); // Delay a second between loops.
 } // End of loop
