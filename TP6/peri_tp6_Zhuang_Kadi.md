@@ -9,9 +9,9 @@ Kailun ZHUANG
 ### BLE
 Le BLE est composé de 
 
-  - plusieurs Service
-  - plusieurs Charactéristique par service
-  - plusieurs Description par caractéristique
+    - plusieurs Service
+    - plusieurs Charactéristique par service
+    - plusieurs Description par caractéristique
 
 Chacun possède un UUID qui le permet de lui identifier et accéder aux différents services.
 L'`Advertising` permet aux devices de diffuser l'information qui définit leurs intentions.

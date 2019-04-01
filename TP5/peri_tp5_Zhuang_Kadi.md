@@ -147,6 +147,6 @@ void loop() {
 
 ``` 
 
-Au début, le capteur ultrason n'était pas bien connecté à l'ESP32. En effet, il y avait un problème avec le cablage physique. Donc, on a refait les connexion utilisant des fils femelle-femelle (sans la breadboard). Ainsi, on affichait bien la distance.
+Au début, le capteur ultrason n'était pas bien connecté à l'ESP32. En effet, il y avait un problème avec le cablage physique. Donc, on a refait les connexions utilisant des fils femelle-femelle (sans la breadboard). Ainsi, on affichait bien la distance.
 
-En fin, le code, qu'on a présenté, permet d'afficher la distance mesurée par le capteur directement sur lécran OLED.
+En fin, le code - qu'on a présenté dans ce rapport - permet d'afficher la distance mesurée par le capteur directement sur l'écran OLED.
