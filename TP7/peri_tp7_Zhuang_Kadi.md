@@ -104,3 +104,81 @@ s2f.write(string + "\n") # ne pas oublier le '\n'
 
 ### Création d'un serveur web
 
+On a repris le code du tp1 puis mis le code de fake.c dans un thread  : 
+
+```c
+
+void* listen_fifo(void *arg) {
+
+    int     f2s, s2f;                                  // fifo file descriptors
+    char    *f2sName = "/tmp/f2s_fw";                  // filo names
+    char    *s2fName = "/tmp/s2f_fw";                  //
+    char    serverRequest[MAXServerResquest];          // buffer for the request
+    fd_set  rfds;                                           // flag for select
+    struct  timeval tv;                                     // timeout
+    tv.tv_sec = 1;                                          // 1 second
+    tv.tv_usec = 0;
+    struct gpio_info * info = (struct gpio_info *) arg;
+    printf("threads fifo created\n");
+
+    /* test mkfifo */
+    result = setup_fifo(s2fName, f2sName, s2f, f2s);
+    if ( result != 0 ) {
+        exit ( 1 );
+    }
+
+    do {
+        FD_ZERO(&rfds);                                     // erase all flags
+        FD_SET(s2f, &rfds);                                 // wait for s2f
+        FD_SET(STDIN_FILENO, &rfds);
+
+        if (select(s2f+1, &rfds, NULL, NULL, &tv) != 0) {   // wait until timeout
+            if (FD_ISSET(s2f, &rfds)) {                     // something to read
+                int nbchar;
+                if ((nbchar = read(s2f, serverRequest, MAXServerResquest)) == 0) break;
+                serverRequest[nbchar]=0;
+                fprintf(stderr,"[server]: %s", serverRequest);
+                write(f2s, serverRequest, nbchar);
+
+                /***********************
+                 * Gestion de requete  *
+                 ***********************/
+                if (strcmp(serverRequest, "on\n") == 0) {
+                    info->on = 1; /* turn on the LED */
+                } else if (strcmp(serverRequest, "off\n") == 0) {
+                    info->on = 0;
+                }
+            }
+
+            if (FD_ISSET(STDIN_FILENO, &rfds)) {
+                int nbchar;
+                if ((nbchar = read(STDIN_FILENO, serverRequest, MAXServerResquest)) == 0) break;
+                serverRequest[nbchar]=0;
+                fprintf(stderr,"[stdin ]: %s", serverRequest);
+            }
+        }
+    }
+    while (1);
+
+    close(f2s);
+    close(s2f);
+}
+```
+
+configurer le navigateur :
+
+	- ne pas rediriger peri
+
+Puis 
+
+	- On lance le server et le programme C
+	- On ouvre la page sur l'adresse peri:8025 
+	- On entre on/off
+
+On voie bien la LED s'allumer ou fermer selon on/off
+
+##### Remarque 
+
+il faut laisser le port du server à 8000 ou 8100.
+
+Lorsque le client entre une donnée, le '\n' est envoyé, ne pas l'oublier dans le `strcmp`.
