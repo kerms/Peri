@@ -90,6 +90,7 @@ setup_gpio_mmap ( uint32_t volatile ** ptr )
     mmap_fd = open ( "/dev/mem", O_RDWR | O_SYNC );
 
     if ( mmap_fd < 0 ) {
+        perror("mmap");
         return -1;
     }
 
@@ -103,7 +104,9 @@ setup_gpio_mmap ( uint32_t volatile ** ptr )
 
     if ( mmap_result == MAP_FAILED ) {
         close ( mmap_fd );
+        perror("mmap_res");
         return -1;
+    
     }
 
     *ptr = ( uint32_t volatile * ) mmap_result;

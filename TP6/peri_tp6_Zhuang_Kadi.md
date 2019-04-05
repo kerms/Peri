@@ -9,18 +9,18 @@ Kailun ZHUANG
 ### BLE
 Le BLE est composé de 
 
-    - plusieurs Service
-    - plusieurs Charactéristique par service
-    - plusieurs Description par caractéristique
+    - plusieurs Services
+    - plusieures Caractéristiques par service
+    - plusieures Descriptions par caractéristique
 
-Chacun possède un UUID qui le permet de lui identifier et accéder aux différents services.
+Chacun possède un UUID qui permet de l'identifier et accéder aux différents services.
 L'`Advertising` permet aux devices de diffuser l'information qui définit leurs intentions.
 
 [source](https://randomnerdtutorials.com/esp32-bluetooth-low-energy-ble-arduino-ide/ "BLE arduino")
 
 ### BLE SCAN
 
-La demo se lance sans problème, et affiche les périphériques à proximité.
+La demo se lance sans problème et affiche les périphériques à proximité.
 
 Pour faire un scan : 
 
@@ -77,18 +77,18 @@ void loop() {
 
 ### BLE Serveur
 
-On a d'abord modifier le nom de notre ESP32 pour se reconnaître.
+On a d'abord modifié le nom de notre ESP32 pour se reconnaître.
 Puis après le téléversement, on peut le voir apparaître sur notre application `nRF connect`.
-En envoyant les données on voie la donnée apparaître sur le Serial.
+En envoyant les données on voit la donnée apparaître sur le Serial.
 
 Pour lancer un Serveur : 
 
     - Préparer les UUIDs des Services et des Charactères
     - Init BLEDevice
     - Créer un serveur
-    - Créer un service depuis un serveur (on peut créer plusieurs service) avec un UUID
-    - Créer un characteristic depuis le service (on peut créer plusieurs char) avec un UUID
-    - Maintenant on peut écrire des valeurs dans cette caracteristic
+    - Créer un service depuis un serveur (on peut créer plusieurs services) avec un UUID
+    - Créer une caractéristique depuis le service (on peut créer plusieurs char) avec un UUID
+    - Maintenant on peut écrire des valeurs dans cette caractéristique
     - Lancer le service
     - Lancer un advertiser : pour se rendre visible par les autres
 

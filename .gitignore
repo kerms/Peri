@@ -13,6 +13,10 @@ Cours/
 *.order
 *.symvers
 *.mod.c
+*.zip
+*.tgz
+fake
+
 
 2017-2018/
 
