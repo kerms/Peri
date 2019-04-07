@@ -9,9 +9,9 @@ Kailun ZHUANG
 ### BLE
 Le BLE est composé de 
 
-    - plusieurs Services
-    - plusieures Caractéristiques par service
-    - plusieures Descriptions par caractéristique
+- plusieurs Services
+- plusieures Caractéristiques par service
+- plusieures Descriptions par caractéristique
 
 Chacun possède un UUID qui permet de l'identifier et accéder aux différents services.
 L'`Advertising` permet aux devices de diffuser l'information qui définit leurs intentions.
@@ -24,10 +24,10 @@ La demo se lance sans problème et affiche les périphériques à proximité.
 
 Pour faire un scan : 
 
-    - Init BLEDevice
-    - Créer le SCAN -> ::getScan()
-    - Associer avec un callback qui serait appelé si un périphérique est découvert
-    - Lancer le Scan
+- Init BLEDevice
+- Créer le SCAN -> ::getScan()
+- Associer avec un callback qui serait appelé si un périphérique est découvert
+- Lancer le Scan
 
 ```cpp
 #include <BLEDevice.h>
@@ -83,14 +83,14 @@ En envoyant les données on voit la donnée apparaître sur le Serial.
 
 Pour lancer un Serveur : 
 
-    - Préparer les UUIDs des Services et des Caractères
-    - Init BLEDevice
-    - Créer un serveur
-    - Créer un service depuis un serveur (on peut créer plusieurs services) avec un UUID
-    - Créer une caractéristique depuis le service (on peut créer plusieurs char) avec un UUID
-    - Maintenant on peut écrire des valeurs dans cette caractéristique
-    - Lancer le service
-    - Lancer un advertiser : pour se rendre visible par les autres
+- Préparer les UUIDs des Services et des Caractères
+- Init BLEDevice
+- Créer un serveur
+- Créer un service depuis un serveur (on peut créer plusieurs services) avec un UUID
+- Créer une caractéristique depuis le service (on peut créer plusieurs char) avec un UUID
+- Maintenant on peut écrire des valeurs dans cette caractéristique
+- Lancer le service
+- Lancer un advertiser : pour se rendre visible par les autres
 
 ```cpp
 #include <BLEDevice.h>
@@ -161,25 +161,25 @@ void loop() {
 On a modifié les UUIDs pour adapter au UUIDs de notre appli `nRF connect`.
 Puis il faut s'assurer sur `nRF connect` que:
 
-    - L'UUID du service correspond à celui entré sur la carte, i.e. characteristic
-    - Advertising est open, sinon l'esp32 ne peut pas détecter notre portable.
+- L'UUID du service correspond à celui entré sur la carte, i.e. characteristic
+- Advertising est open, sinon l'esp32 ne peut pas détecter notre portable.
 
 Puis après le téléversement, l'esp32 se connecte bien sur `nRF connect`, on peut voir la donnée envoyée par l'esp32 dans notre caractéristique.
 
 Pour Créer un Client : 
 
-    - Préparer les deux UUID service et charactéristique de la cible.
-    - Créer un Scan, et associer à un callback pour ce scan
-    - Dans le callback du scan, tester si le périphérique découvert est bien notre serveur
-    - Sauvergarder le pointeur de ce périphérique
-    - On est prêt à se connecter au serveur
-    - Créer le client
-    - Associer un callback de BLEClient
-    - Lancer la connection avec le pointeur sauvegardé
-    - Vérifier si le service est disponible
-    - Vérifier si la caractéristique est disponible
-    - Vérifier les permissions de la caractéristique
-    - On peut à présent écrire / lire sur la caractéristique
+- Préparer les deux UUID service et charactéristique de la cible.
+- Créer un Scan, et associer à un callback pour ce scan
+- Dans le callback du scan, tester si le périphérique découvert est bien notre serveur
+- Sauvergarder le pointeur de ce périphérique
+- On est prêt à se connecter au serveur
+- Créer le client
+- Associer un callback de BLEClient
+- Lancer la connection avec le pointeur sauvegardé
+- Vérifier si le service est disponible
+- Vérifier si la caractéristique est disponible
+- Vérifier les permissions de la caractéristique
+- On peut à présent écrire / lire sur la caractéristique
 
 ###### Remarque
 Sur un `HONOR v9`, si le téléphone est en veille, l'esp32 ne peut pas récupérer/envoyer des informations ou des données.
