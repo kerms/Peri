@@ -10,7 +10,7 @@ Kailun ZHUANG
 
 [//]: # (Dans quel répertoire est créée la fifo ?)
 
-	* La fifo est créée dans le répertoire /tmp.
+* La fifo est créée dans le répertoire /tmp.
 
 ```c
 char    *myfifo = "/tmp/myfifo";
@@ -18,13 +18,13 @@ char    *myfifo = "/tmp/myfifo";
 
 [//]: # (Quelle est la différence entre mkfifo et open ?)
 
-	* `mkfifo` sert à créer une fifo. Quant au `open`, il sert à l'ouvrir.
+* `mkfifo` sert à créer une fifo. Quant au `open`, il sert à l'ouvrir.
 
 [//]: # (Pourquoi tester que la fifo existe ?)
 
-	* Si la fifo n'existe pas, le programme devrait s'arrêter. Donc si on ne teste pas, le programme peut faire n'importe quoi (dans notre cas : boucle infinie). En outre, dans le cas où on veut la créer, il faut s'assurer qu'on n'écrase pas celle qui existe.
-	
-	Ainsi, on a rajouté quelques lignes pour vérifier si le fichier existe, sinon on quitte le programme.
+* Si la fifo n'existe pas, le programme devrait s'arrêter. Donc si on ne teste pas, le programme peut faire n'importe quoi (dans notre cas : boucle infinie). En outre, dans le cas où on veut la créer, il faut s'assurer qu'on n'écrase pas celle qui existe.
+
+    Ainsi, on a rajouté quelques lignes pour vérifier si le fichier existe, sinon on quitte le programme.
 
 ```c
 /* create the FIFO (named pipe) */
@@ -44,17 +44,17 @@ if (fd == -1) {
 
 [//]: # (À quoi sert flush ?)
 
-	* Lorsqu'on utilise des appels systèmes tels que `write`, `printf`, le système stocke les données dans un buffer, pour les envoyer par gros packets. Tout cela pour ne pas faire trop d'appels systèmes pour peu de données. Par ailleurs, on ne sait pas si les données ont été vraiment écrites/envoyées. Flush permet de bien envoyer/écrire en vidant le buffer.
+* Lorsqu'on utilise des appels systèmes tels que `write`, `printf`, le système stocke les données dans un buffer, pour les envoyer par gros packets. Tout cela pour ne pas faire trop d'appels systèmes pour peu de données. Par ailleurs, on ne sait pas si les données ont été vraiment écrites/envoyées. Flush permet de bien envoyer/écrire en vidant le buffer.
 
 [//]: # (Pourquoi ne ferme-t-on pas la fifo ? )
 
-	* À la fin de l'exécution du programme, la fifo est fermée automatiquement par le `garbage collector` qui "recycle" la mémoire. 
+* À la fin de l'exécution du programme, la fifo est fermée automatiquement par le `garbage collector` qui "recycle" la mémoire. 
 
 [//]: # (Que fait readline ?)
 
-	* Le `readline` permet de lire des caractères d'une ligne jusqu'à ce qu'il atteind un `\n`.
+* Le `readline` permet de lire des caractères d'une ligne jusqu'à ce qu'il atteind un `\n`.
 
-	* Lorsqu'on lance un écrivain (en C ou en Pyhton) rien ne se passe tant qu'on n'a pas lancé un lecteur. En effet, `pipe_out.flush()` ne peut pas vider le buffer tant que le lecteur ne lit pas la fifo. Le pipe est "bouché" du côté lecteur.
+* Lorsqu'on lance un écrivain (en C ou en Pyhton) rien ne se passe tant qu'on n'a pas lancé un lecteur. En effet, `pipe_out.flush()` ne peut pas vider le buffer tant que le lecteur ne lit pas la fifo. Le pipe est "bouché" du côté lecteur.
 
 
 ### Création d'un serveur fake
