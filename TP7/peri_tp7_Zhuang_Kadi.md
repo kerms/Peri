@@ -16,13 +16,13 @@ Kailun ZHUANG
 char    *myfifo = "/tmp/myfifo";
 ```
 
-[//]: # (Quelle différence mkfifo et open ?)
+[//]: # (Quelle est la différence entre mkfifo et open ?)
 
 	* `mkfifo` sert à créer une fifo. Quant au `open`, il sert à l'ouvrir.
 
 [//]: # (Pourquoi tester que la fifo existe ?)
 
-	* Si la fifo n'existe pas, le programme devrait s'arrêter. Donc si on ne teste pas, le programme peut faire n'importe quoi (dans notre cas : infinite loop).
+	* Si la fifo n'existe pas, le programme devrait s'arrêter. Donc si on ne teste pas, le programme peut faire n'importe quoi (dans notre cas : boucle infinie). En outre, dans le cas où on veut la créer, il faut s'assurer qu'on n'écrase pas celle qui existe.
 	
 	Ainsi, on a rajouté quelques lignes pour vérifier si le fichier existe, sinon on quitte le programme.
 
@@ -44,42 +44,38 @@ if (fd == -1) {
 
 [//]: # (À quoi sert flush ?)
 
-	* Lorsqu'on utilise des appels systèmes tels que `write`, `printf`, le système stoque les données dans un buffer, pour envoyer par gros packet. Tout cela pour ne pas faire trop d'appels systèmes pour peu de données. Par ailleurs, on ne sait pas si les données ont été vraiment écrites/envoyées.
-
-	Flush permet de bien envoyer/écrire en vidant le buffer.
+	* Lorsqu'on utilise des appels systèmes tels que `write`, `printf`, le système stocke les données dans un buffer, pour les envoyer par gros packets. Tout cela pour ne pas faire trop d'appels systèmes pour peu de données. Par ailleurs, on ne sait pas si les données ont été vraiment écrites/envoyées. Flush permet de bien envoyer/écrire en vidant le buffer.
 
 [//]: # (Pourquoi ne ferme-t-on pas la fifo ? )
 
-[//]: # (//TODO)
+	* À la fin de l'exécution du programme, la fifo est fermée automatiquement par le `garbage collector` qui "recycle" la mémoire. 
 
 [//]: # (Que fait readline ?)
 
-	* Le `readline` permet de lire des caractères jusqu'à ce qu'il atteind un `\n`.
+	* Le `readline` permet de lire des caractères d'une ligne jusqu'à ce qu'il atteind un `\n`.
 
-	* Lorsqu'on lance un écrivain (en C ou en Pyhton) rien ne se passe tant qu'on n'a pas lancé un lecteur. En effet, `pipe_out.flush()` ne peut pas vider le buffer tant que le lecteur ne lit pas sur la fifo. Le pipe est fermé du côté de lecteur.
-
-
+	* Lorsqu'on lance un écrivain (en C ou en Pyhton) rien ne se passe tant qu'on n'a pas lancé un lecteur. En effet, `pipe_out.flush()` ne peut pas vider le buffer tant que le lecteur ne lit pas la fifo. Le pipe est "bouché" du côté lecteur.
 
 
 ### Création d'un serveur fake
 
-La fonction `select` prend en arguments un descripteur de fichier, son flag `fd_set` et un timeout `struct timeval`. 
-Cette fonction nous permet d'attendre sur plusieurs descripteurs de fichiers.
+La fonction `select` prend en arguments un descripteur de fichier, un flag `fd_set` et un timeout `struct timeval`. 
+Cette fonction permet l'attente sur plusieurs descripteurs de fichiers.
 
-Pour chaques sets de descripteurs
+Pour chaque set de descripteurs
 
 ```c
-FD_ZERO(&fdset);  
+FD_ZERO(&fdset);
 ```
 
-Pour chaques descripteurs de fichiers, on associe à cet set.
+Pour chaque descripteur de fichier, on associe le set correspondant.
 
 ```c
 FD_SET(fd1, &fdset);
 FD_SET(fd2, &fdset);
 ```
 
-Puis on attend qu'un événement arrive :
+Puis, on attend qu'un événement se produise :
 
 ```c
 if (select(s2f+1, &rfds, NULL, NULL, &tv) != 0) {   // wait until timeout
@@ -99,7 +95,6 @@ Pour lire l'entrée clavier en Python2, on utilise la fonction `raw_input()` com
 string = raw_input("Enter your message : ")
 s2f.write(string + "\n") # ne pas oublier le '\n'
 ```
-
 
 
 ### Création d'un serveur web
@@ -171,14 +166,14 @@ configurer le navigateur :
 
 Puis 
 
-	- On lance le server et le programme C
-	- On ouvre la page sur l'adresse peri:8025 
-	- On entre on/off
+	- lancer le server et le programme C
+	- ouvrir la page sur l'adresse peri:8025 
+	- entrer on/off
 
-On voie bien la LED s'allumer ou fermer selon on/off
+On voit bien la LED s'allumer ou s'éteindre selon on/off
 
 ##### Remarque 
 
-il faut laisser le port du server à 8000 ou 8100.
+Il faut laisser le port du server à 8000 ou 8100.
 
-Lorsque le client entre une donnée, le '\n' est envoyé, ne pas l'oublier dans le `strcmp`.
+Lorsque le client entre une donnée, le '\n' est envoyé, donc il ne faut pas l'oublier dans le `strcmp`.

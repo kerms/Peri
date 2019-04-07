@@ -83,7 +83,7 @@ En envoyant les données on voit la donnée apparaître sur le Serial.
 
 Pour lancer un Serveur : 
 
-    - Préparer les UUIDs des Services et des Charactères
+    - Préparer les UUIDs des Services et des Caractères
     - Init BLEDevice
     - Créer un serveur
     - Créer un service depuis un serveur (on peut créer plusieurs services) avec un UUID
@@ -169,23 +169,22 @@ Puis après le téléversement, l'esp32 se connecte bien sur `nRF connect`, on p
 Pour Créer un Client : 
 
     - Préparer les deux UUID service et charactéristique de la cible.
-    - Créer un Scan, et asscier à un callback pour ce scan
+    - Créer un Scan, et associer à un callback pour ce scan
     - Dans le callback du scan, tester si le périphérique découvert est bien notre serveur
-    - Sauvergarder le pointeur de cet périphérique
-    - On est prêt à connecter au serveur
+    - Sauvergarder le pointeur de ce périphérique
+    - On est prêt à se connecter au serveur
     - Créer le client
     - Associer un callback de BLEClient
     - Lancer la connection avec le pointeur sauvegardé
     - Vérifier si le service est disponible
-    - Vérifier si le charactéristique est disponible
-    - Vérifier les permissions du caractéristique
-    - On peut à présent écrire / lire sur le caractéristique
+    - Vérifier si la caractéristique est disponible
+    - Vérifier les permissions de la caractéristique
+    - On peut à présent écrire / lire sur la caractéristique
 
 ###### Remarque
-Sur un `HONOR v9`, si le téléphone est en veille, l'esp32 ne peut pas récupérer/envoyer des informations ou les données.
-Les fonctions read/write sont bloquants, à un certain temps l'esp32 se déconnecte.
-En rebootant on a quelques chances d'avoir des erreurs de type `assertion "heap != NULL && "free() target pointer is outside heap areas"" failed:`
-
+Sur un `HONOR v9`, si le téléphone est en veille, l'esp32 ne peut pas récupérer/envoyer des informations ou des données.
+Les fonctions read/write sont bloquantes, à un certain temps l'esp32 se déconnecte.
+En rebootant, on a quelques chances d'avoir des erreurs de type `assertion "heap != NULL && "free() target pointer is outside heap areas"" failed:`
 
 
 ```cpp
