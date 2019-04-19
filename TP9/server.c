@@ -9,7 +9,16 @@
 
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
+struct info_connection
+{
+        int sockfd;
+        char * IP_Address;
+};
+
+static int hash_tab[256];
+static int ko = 0, ok = 0;
 
 /* Display error message and quit the program */
 void error(const char *msg)
@@ -18,14 +27,65 @@ void error(const char *msg)
         exit(1);
 }
 
+/* Add all chars in the string */
+unsigned long hash(unsigned char *str)
+{
+        unsigned int hash = 0;
+        int c;
+        
+        while (c = *str++)
+            hash += c;
+        
+        return hash;
+}
 
+void * connection_handler(void* arg){
+        struct info_connection * info = (struct info_connection *) arg;
+        int newsockfd = info->sockfd;
+        char buffer[256];
+        bzero(buffer, 256);
+        int n;
+        n = read(newsockfd, buffer, 255);
+        if (n < 0){
+                perror("ERROR reading from socket");
+        }
+        if (strcmp(buffer, "ok\n") == 0){
+                int hash_value = hash(info->IP_Address)%256;
+                if (hash_tab[hash_value]) {
+                        printf("Already registered\n");
+                } else {
+                        ok++;
+                        hash_tab[hash_value] = 1;
+                        printf("Registered\n");
+                }
+        }
+        else if (strcmp(buffer, "ko\n") == 0){
+                int hash_value = hash(info->IP_Address)%256;
+                if (hash_tab[hash_value]) {
+                        printf("Already registered\n");
+                } else {
+                        ko++;
+                        hash_tab[hash_value] = 1;
+                        printf("Registered\n");
+                }
+        }
+
+        printf(" Data: [%s]\n", buffer);
+        printf(" ok : %d vs ko : %d\n", ok, ko);
+        free(info);
+        close(newsockfd);
+        return 0;
+}
+
+/* arg[1] <-- PORT NO */
 int main(int argc, char *argv[])
 {
         int sockfd, newsockfd, portno;
         socklen_t clilen;
         char buffer[256];
         struct sockaddr_in serv_addr, cli_addr;
-        int n;
+
+        pthread_t vote;
 
         if (argc < 2) {
                 fprintf(stderr, "ERROR, no port provided\n");
@@ -42,33 +102,38 @@ int main(int argc, char *argv[])
         // INADDR_ANY dit que la socket va être affectée à toutes les interfaces locales
 
         bzero((char *) &serv_addr, sizeof(serv_addr));
-        portno = atoi(argv[1]);
-        serv_addr.sin_family = AF_INET;
-        serv_addr.sin_addr.s_addr = INADDR_ANY;
-        serv_addr.sin_port = htons(portno);
-        if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-                error("ERROR on binding");
+        portno = atoi(argv[1]);// convert the portno as string to an int
+        serv_addr.sin_family = AF_INET;//IPv4
+        serv_addr.sin_addr.s_addr = INADDR_ANY;//Takes one of the available interfaces
+        serv_addr.sin_port = htons(portno);// convert the port number to bigendian
+        if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) // if not bound correctly
+                error("ERROR on binding"); // display error
 
 
         // On commence à écouter sur la socket. Le 5 est le nombre max
         // de connexions pendantes
 
-        listen(sockfd, 5);
+        listen(sockfd, 5); 
         while (1) {
+                //accept a connection to server from client pending list
                 newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
                 if (newsockfd < 0)
                     error("ERROR on accept");
+                //display the client IP address and its port number 
+                printf("Received packet from %s:%d\n\n",
+                inet_ntoa(cli_addr.sin_addr), ntohs(cli_addr.sin_port));
 
-                bzero(buffer, 256);
-                n = read(newsockfd, buffer, 255);
-                if (n < 0)
-                    error("ERROR reading from socket");
+                struct info_connection *to_thread = malloc(sizeof(struct info_connection));
+                char * addr = inet_ntoa(cli_addr.sin_addr);
 
-                printf("Received packet from %s:%d\nData: [%s]\n\n",
-                       inet_ntoa(cli_addr.sin_addr), ntohs(cli_addr.sin_port),
-                       buffer);
+                to_thread->IP_Address = addr;
+                to_thread->sockfd = newsockfd;
+                if (pthread_create(&vote, NULL, connection_handler, to_thread){
+                        perror("pthread_create failed");
+                }
 
-                close(newsockfd);
+
+                pthread_detach(vote);
         }
 
         close(sockfd);

@@ -13,6 +13,7 @@ void error(const char *msg)
         exit(0);
 }
 
+//argv[1] <-- server name, argv[2] <-- port number
 int main(int argc, char *argv[])
 {
         int sockfd, portno, n;
@@ -22,7 +23,7 @@ int main(int argc, char *argv[])
         char buffer[256];
 
         // Le client doit connaitre l'adresse IP du serveur, et son numero de port
-        if (argc < 3) {
+        if (argc < 4) {
                 fprintf(stderr,"usage %s hostname port\n", argv[0]);
                 exit(0);
         }
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
         if (sockfd < 0)
                 error("ERROR opening socket");
 
+        //Convert name of argv to IP address
         server = gethostbyname(argv[1]);
         if (server == NULL) {
                 fprintf(stderr,"ERROR, no such host\n");
@@ -53,8 +55,12 @@ int main(int argc, char *argv[])
 
         if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
                 error("ERROR connecting");
-
-        strcpy(buffer,"Coucou Peri\n");
+        if (strcmp(argv[3], "ok") == 0) {
+                strcpy(buffer,"ok\n");        
+        } else if (strcmp(argv[3], "ko") == 0){
+                strcpy(buffer,"ko\n");
+        }
+        
         n = write(sockfd,buffer,strlen(buffer));
         if (n != strlen(buffer))
                 error("ERROR message not fully trasmetted");
