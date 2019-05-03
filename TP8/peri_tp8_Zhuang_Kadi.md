@@ -35,6 +35,8 @@ Quelques tables sont reliées entre elles avec des relations:
 - 1:n un objet d'une table est relié à plusieurs objets de l'autre.
 - m:n un groupe d'objets `m` d'une table est associé à un groupe d'objets `n` de l'autre table.
 
+Une relation peut être `identifying` ou `non-identifying`. Pour les relations `non-identifying`, l'objet référencé peut ne pas exister, alors que les enregistrements avec des relations `identifying` nécessite l'existance de tous les objets référencés pour être créés.
+
 ##### Data Manipulation Language (DML)
 
 On peut aussi manipuler les enregistrements de nos tables en `SQL`
