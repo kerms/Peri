@@ -21,13 +21,13 @@ DROP TABLE
 Notre base de données est constituée de 7 tables : enclos, animal, type_animal, capteur, mesure, type_capteur, soigneur. 
 Les tables contiennent des lignes (enregistrements) et des colonnes (champs). 
 
-Primary key : clé primaire consiste une colonne qui identifie chaque ligne d'une table. Elle est déclarée comme :
+Primary key : la clé primaire est une colonne qui identifie chaque ligne d'une table. Elle est déclarée comme :
 
 - Unique
 - AUTO INCREMENT
 - NOT NULL
 
-Foreign key : clé étrangère qui est une référence (un pointeur) vers une clé primaire.
+Foreign key : le clé étrangère est une référence (un pointeur) vers une clé primaire.
 
 Quelques tables sont reliées entre elles avec des relations: 
 
@@ -63,3 +63,19 @@ UPDATE table
 SET column 1 = new_value, column 2 = new_value
 [WHERE condition];
 ```
+
+###### Remarque : 
+
+On peut utiliser l’opérateur `LIKE` dans la clause `WHERE` des requêtes `SQL`. Ce mot-clé permet d’effectuer une recherche sur un modèle particulier.
+
+__Syntaxe__ : Si on souhaite rechercher des enregistrements dont la valeur d’une colonne suit un certain modèle, il suffit d'écrire : 
+
+```sql
+SELECT *
+FROM table
+WHERE colonne LIKE modele
+```
+
+##### Warning : 
+
+On n'arrive pas à télécharger le fichier ZIP en pièce jointe [ICI](https://www-soc.lip6.fr/trac/sesi-peri/wiki/Peri19_T08#no1)
