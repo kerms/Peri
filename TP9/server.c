@@ -11,14 +11,23 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
+#define SUMMER  0
+#define WINTER  1
+
+#define ACK_OK                  0
+#define ACK_ALREADY_REGISTERED  1
+#define ACK_INVALID_CHOICE      2
+#define ACK_ERROR               3
+
 struct info_connection
 {
         int sockfd;
         char * IP_Address;
 };
 
-static int hash_tab[256];
-static int ko = 0, ok = 0;
+static char* name_tab[256];
+static unsigned int pos_tab = 0;
+static int vote[2];
 
 /* Display error message and quit the program */
 void error(const char *msg)
@@ -27,7 +36,7 @@ void error(const char *msg)
         exit(1);
 }
 
-/* Add all chars in the string */
+/* Add all chars in the string 
 unsigned long hash(unsigned char *str)
 {
         unsigned int hash = 0;
@@ -38,21 +47,82 @@ unsigned long hash(unsigned char *str)
         
         return hash;
 }
+*/
 
+
+//Test si le user a déjà voté
+int already_exist(const char * username){
+    int i;
+    for (i = 0; i < pos_tab; ++i)
+    {
+        if (strcmp(name_tab[i],username)==0)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+//Ajouter un nouveau utilisateur
+void add_user(const char * username)
+{
+    int len_user = strlen(username);
+    char * new_user = malloc (sizeof(char)*(len_user+1));
+    strcpy(new_user, username);
+    name_tab[pos_tab++] = new_user;
+}
+
+//Test si le vote est valide
+int choice_valid(char choice)
+{
+    if ((choice & ~1) == 0 ) 
+    { 
+        return 1;
+    }
+    return 0; 
+}
+
+//Thread qui gère les connections i.e vote
 void * connection_handler(void* arg){
         struct info_connection * info = (struct info_connection *) arg;
         int newsockfd = info->sockfd;
         char buffer[256];
         bzero(buffer, 256);
-        int n;
+        int n, ack = ACK_OK;
         n = read(newsockfd, buffer, 255);
         if (n < 0){
                 perror("ERROR reading from socket");
         }
-        if (strcmp(buffer, "ok\n") == 0){
+
+        printf(" Data: [%s]\n", buffer);
+        printf(" SUMMER : %d vs WINTER : %d\n", vote[SUMMER], vote[WINTER]);
+
+        if (already_exist(&buffer[1])== 1)
+        {
+            printf("Already registered\n");
+            ack = ACK_ALREADY_REGISTERED;
+            goto _ack;
+        }
+
+        if ( choice_valid(buffer[0])==0)
+        {
+            printf("Invalid choice\n");
+            ack = ACK_INVALID_CHOICE;
+            goto _ack;
+        }
+
+        switch (buffer[0]) 
+        {
+            case SUMMER :
+            case WINTER :
+                ++vote[(int)buffer[0]];
+                break;
+            default:
+                break;
+        }
+        
+ /*       if (strcmp(buffer, "ok\n") == 0){
                 int hash_value = hash(info->IP_Address)%256;
-                if (hash_tab[hash_value]) {
-                        printf("Already registered\n");
                 } else {
                         ok++;
                         hash_tab[hash_value] = 1;
@@ -69,20 +139,28 @@ void * connection_handler(void* arg){
                         printf("Registered\n");
                 }
         }
+*/
 
-        printf(" Data: [%s]\n", buffer);
-        printf(" ok : %d vs ko : %d\n", ok, ko);
+
+
+
+_ack:
+        sprintf(buffer, "%d", ack);
+        n = write(newsockfd,buffer,strlen(buffer));
+        if (n != strlen(buffer))
+            printf("ERROR message not fully trasmetted");
+
         free(info);
         close(newsockfd);
         return 0;
 }
+
 
 /* arg[1] <-- PORT NO */
 int main(int argc, char *argv[])
 {
         int sockfd, newsockfd, portno;
         socklen_t clilen;
-        char buffer[256];
         struct sockaddr_in serv_addr, cli_addr;
 
         pthread_t vote;
@@ -114,11 +192,14 @@ int main(int argc, char *argv[])
         // de connexions pendantes
 
         listen(sockfd, 5); 
-        while (1) {
+        while (1) 
+        {
                 //accept a connection to server from client pending list
                 newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-                if (newsockfd < 0)
+                if (newsockfd < 0) 
+                {
                     error("ERROR on accept");
+                }
                 //display the client IP address and its port number 
                 printf("Received packet from %s:%d\n\n",
                 inet_ntoa(cli_addr.sin_addr), ntohs(cli_addr.sin_port));
@@ -128,7 +209,8 @@ int main(int argc, char *argv[])
 
                 to_thread->IP_Address = addr;
                 to_thread->sockfd = newsockfd;
-                if (pthread_create(&vote, NULL, connection_handler, to_thread){
+                if (pthread_create(&vote, NULL, connection_handler, to_thread))
+                {
                         perror("pthread_create failed");
                 }
 

@@ -7,6 +7,11 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#define ARG_IP          1
+#define ARG_PORT        2
+#define ARG_NAME        3
+#define ARG_CHOICE      4
+
 void error(const char *msg)
 {
         perror(msg);
@@ -20,14 +25,17 @@ int main(int argc, char *argv[])
         struct sockaddr_in serv_addr;
         struct hostent *server;
 
+        char * username = argv[ARG_NAME];
+
+        /* octet 0: choix, puis username */
         char buffer[256];
 
         // Le client doit connaitre l'adresse IP du serveur, et son numero de port
-        if (argc < 4) {
+        if (argc < 5) {
                 fprintf(stderr,"usage %s hostname port\n", argv[0]);
                 exit(0);
         }
-        portno = atoi(argv[2]);
+        portno = atoi(argv[ARG_PORT]);
 
         // 1) Création de la socket, INTERNET et TCP
 
@@ -36,7 +44,7 @@ int main(int argc, char *argv[])
                 error("ERROR opening socket");
 
         //Convert name of argv to IP address
-        server = gethostbyname(argv[1]);
+        server = gethostbyname(argv[ARG_IP]);
         if (server == NULL) {
                 fprintf(stderr,"ERROR, no such host\n");
                 exit(0);
@@ -55,18 +63,29 @@ int main(int argc, char *argv[])
 
         if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
                 error("ERROR connecting");
-        if (strcmp(argv[3], "ok") == 0) {
-                strcpy(buffer,"ok\n");        
-        } else if (strcmp(argv[3], "ko") == 0){
-                strcpy(buffer,"ko\n");
+
+        /* fill buffer to send */
+        if (strcmp(argv[ARG_CHOICE], "summer") == 0) {
+                sprintf(buffer,"%d\n", 0);
+        } else if (strcmp(argv[ARG_CHOICE], "winter") == 0){
+                sprintf(buffer, "%d\n", 1);
+        } else {
+                printf("Votre Choix est invalide soit summer, soit winter.\n");
+                return 1;
         }
+        strcpy(&buffer[1], username);
         
+        /* send buffer to server */
         n = write(sockfd,buffer,strlen(buffer));
         if (n != strlen(buffer))
                 error("ERROR message not fully trasmetted");
 
+        n = read(sockfd, buffer, 255);
+        if (n < 0){
+            perror("ERROR reading from socket");
+        }
+        printf("%d\n", buffer[0]);
         // On ferme la socket
-
         close(sockfd);
         return 0;
 }
