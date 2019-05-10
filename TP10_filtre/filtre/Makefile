@@ -10,7 +10,7 @@ HEADER = def.h  filterNR.h gauss.h noise.h nrutil.h random.h sampleNR.h test_fil
 OPTION = -Wno-unused-parameter -Wno-comment
 
 tp: $(OBJ) $(HEADER)
-	gcc -o tp $(OBJ)
+	gcc -o tp $(OBJ) -lm
 
 filterNR.o: filterNR.c $(HEADER)
 	gcc -c $(OPTION) filterNR.c

@@ -233,8 +233,11 @@ void fir_average_i16(uint8 *X, int n, int radius, uint8 *Y)
 {
     // normalisation par division
     
-    
+    int samples, iter_sample;
     uint8 *T; // tableau temporaire avec bords
+    uint16 sum = 0;
+    uint16 div = 2*radius +1;
+    uint16 res;
     
     // allocation et copie dans un tableau temporaire avec bords
     T = ui8vector(0-radius, n-1+radius);
@@ -243,6 +246,21 @@ void fir_average_i16(uint8 *X, int n, int radius, uint8 *Y)
 
     zero_ui8vector(Y, 0, n-1); // ligne de code a supprimer
     // CODE A COMPLETER ICI
+
+    for (samples = 0; samples < n; ++samples)
+    {
+        for (iter_sample = -radius; 
+             iter_sample < radius+1; 
+             ++iter_sample)
+        {
+            sum += T[samples + iter_sample];
+        }
+
+        /* round mode */
+        sum = (sum + div/2 )/ div;
+        Y[samples] = (uint8) sum;
+        sum = 0;
+    }
     
     free_ui8vector(T, 0-radius, n-1+radius);
 }
@@ -252,7 +270,13 @@ void fir_average_q16(uint8 *X, int n, int radius, int q, uint8 *Y)
 {
     // normalisation par fraction equivalente
     uint8 *T; // tableau temporaire avec bords
-        
+    int samples, iter_sample;
+    uint16 sum = 0;
+    uint16 div = 2*radius +1;
+    uint16 res;
+    uint16 pow_value = 1 << q;
+    uint16 mult = pow_value / div;
+
     // allocation et copie dans un tableau temporaire avec bords
     T = ui8vector(0-radius, n-1+radius);
     dup_ui8vector(X, 0, n-1, T);
@@ -260,6 +284,21 @@ void fir_average_q16(uint8 *X, int n, int radius, int q, uint8 *Y)
     
     zero_ui8vector(Y, 0, n-1); // ligne de code a supprimer
     // CODE A COMPLETER ICI
+    for (samples = 0; samples < n; ++samples)
+    {
+        for (iter_sample = -radius; 
+             iter_sample < radius+1; 
+             ++iter_sample)
+        {
+            sum += T[samples + iter_sample];
+        }
+
+        /* round mode */
+        sum = (mult*sum  +  (pow_value/2) )/ pow_value;
+        Y[samples] = (uint8) sum;
+        sum = 0;
+    }
+
     
     free_ui8vector(T, 0-radius, n-1+radius);
 }
@@ -327,16 +366,105 @@ void iir_f32(uint8 *X, int n, float32 alpha, uint8 *Y)
 void iir_q16(uint8 *X, int n, float32 alpha, int q, uint8 *Y)
 // ----------------------------------------------------------
 {
-    zero_ui8vector(Y, 0, n-1); // ligne de code a supprimer
+    //zero_ui8vector(Y, 0, n-1); // ligne de code a supprimer
     
-    // CODE A COMPLETER ICI
+    int i;
+    int radius = 2;
+    uint8 *T; // tableau temporaire avec bords
+    
+    sint16 x0, y0, y1, y2;
+    sint16 Q = 1 << q;
+
+    /* float32 allowed because not in loop */
+    float32 gamma;
+    float32 b0, a1, a2;
+    float32 B0, A1, A2;
+    
+    
+
+    gamma = exp(-alpha);
+    
+    b0 = (1.0f - gamma) * (1.0f - gamma);
+    a1 = 2.0f * gamma;
+    a2 = - gamma * gamma;
+    
+    B0 = b0 * Q;
+    A1 = a1 * Q;
+    A2 = a2 * Q;
+
+    y1 = y2 = X[0];
+    
+    printf("b0 : %f\n", b0);
+    printf("Q : %d\n", Q);
+    printf("B0 : %f\n", B0);
+    printf("A1 : %f\n", A1);
+    printf("A2 : %f\n", A2);
+    printf("sum of coeff a1 + a2 + b0 : %f\n", a1 + a2 + b0);
+    printf("sum of coeff A1 + A2 + B0 : %f\n", A1 + A2 + B0);
+    for(i = 0; i < n; i++) {
+        
+        x0 = X[i];
+
+        //printf("value x0 : %d\n", x0);
+
+        if (x0 == 0) {
+            y0 = A1 * y1 + A2 * y2;
+        } else {
+            y0 = B0 * x0 + A1 * y1 + A2 * y2;
+        }
+
+
+        Y[i] = (uint8) y0;
+        
+        y2 = y1;
+        y1 = y0;
+    }
     
 }
 // ----------------------------------------------------------
 void iir_q32(uint8 *X, int n, float32 alpha, int q, uint8 *Y)
 // ----------------------------------------------------------
 {
-    zero_ui8vector(Y, 0, n-1); // ligne de code a supprimer
+    //zero_ui8vector(Y, 0, n-1); // ligne de code a supprimer
     
     // CODE A COMPLETER ICI
+    int i;
+    int radius = 2;
+    
+    sint32 x0, y0, y1, y2;
+    sint32 X0, Y0, Y1, Y2;  
+    sint32 Q = 1 << q;
+    X0 = x0 * Q;
+    Y0 = y0 * Q;
+    Y1 = y1 * Q; 
+    Y2 = y2 * Q;
+    
+    float32 gamma;
+    float32  b0, a1, a2;
+    
+    uint8 *T; // tableau temporaire avec bords
+    float32 B0, A1, A2;
+    
+    gamma = exp(-alpha);
+    
+    b0 = (1.0f - gamma) * (1.0f - gamma);
+    a1 = 2.0f * gamma;
+    a2 = - gamma * gamma;
+    
+    B0 = b0 * Q;
+    A1 = a1 * Q;
+    A2 = a2 * Q;
+
+    y1 = y2 = X[0];
+    
+    for(i = 0; i < n; i++) {
+        
+        X0 = X[i];
+        Y0 = B0 * X0 + A1 * Y1 + A2 * Y2;
+
+        
+        Y[i] = (uint8) y0;
+        
+        Y2 = Y1; Y1 = Y0;
+    }
 }

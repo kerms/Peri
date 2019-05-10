@@ -218,7 +218,7 @@ FIR:
     ndigit = 2; // codage sur 2 chiffre de la valeur de sigma dans le nom du fichier
     
     sigma_gauss = 0.5f; // <- parametre a faire varier
-    sigma_gauss = 1.0f;
+    //sigma_gauss = 1.0f;
     sigma_gauss = 1.4f;
     fir_gauss_f32(X, size, sigma_gauss, Y);
     psnr = psnr_ui8vector(X0, 0, size-1, Y);
@@ -235,28 +235,28 @@ FIR:
  
     alpha = 0.8;  // alpha [0.5 : 1.0] = lissage fort / lissage faible
     alpha = 0.6;
-    alpha = 0.4;
+    //alpha = 0.4;
     iir_f32(X, size, alpha, Y); // sur 8 bits
     psnr = psnr_ui8vector(X0, 0, size-1, Y);
-    printf("IIR(alpha=%.1f) PSNR = %6.2f db\n", alpha, psnr);
+    printf("IIR f32(alpha=%.1f) PSNR = %6.2f db\n", alpha, psnr);
     sep = "_IIRF_";
     generate_path_filename_sep_k_ndigit_extension(dst_path, filename, sep, sigma_noise, ndigit, ext, complete_filename);
     write_ui8vector(Y, 0, size-1, format, complete_filename);
     
     // -- calcul en Q
     q = 8;
-    iir_q16(X, size, alpha, 8, Y); // sur 8 bits
+    iir_q16(X, size, alpha, q, Y); // sur 8 bits
     psnr = psnr_ui8vector(X0, 0, size-1, Y);
-    printf("IIR(alpha=%.1f,q=%d) PSNR = %6.2f db\n", alpha, q, psnr);
+    printf("IIR q16(alpha=%.1f,q=%d) PSNR = %6.2f db\n", alpha, q, psnr);
     sep = "_IIRI16_";
     generate_path_filename_sep_k_ndigit_extension(dst_path, filename, sep, sigma_noise, ndigit, ext, complete_filename);
     write_ui8vector(Y, 0, size-1, format, complete_filename);
     
     // -- calcul en Q
     q = 8;
-    iir_q32(X, size, alpha, 8, Y); // sur 8 bits
+    iir_q32(X, size, alpha, q, Y); // sur 8 bits
     psnr = psnr_ui8vector(X0, 0, size-1, Y);
-    printf("IIR(alpha=%.1f,q=%d) PSNR = %6.2f db\n", alpha, q, psnr);
+    printf("IIR q32(alpha=%.1f,q=%d) PSNR = %6.2f db\n", alpha, q, psnr);
     sep = "_IIRQ32_";
     generate_path_filename_sep_k_ndigit_extension(dst_path, filename, sep, sigma_noise, ndigit, ext, complete_filename);
     write_ui8vector(Y, 0, size-1, format, complete_filename);
