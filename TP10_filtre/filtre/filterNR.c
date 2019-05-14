@@ -370,15 +370,14 @@ void iir_q16(uint8 *X, int n, float32 alpha, int q, uint8 *Y)
     
     int i;
     int radius = 2;
-    uint8 *T; // tableau temporaire avec bords
     
     sint16 x0, y0, y1, y2;
     sint16 Q = 1 << q;
+    sint16 B0, A1, A2;
 
     /* float32 allowed because not in loop */
     float32 gamma;
     float32 b0, a1, a2;
-    float32 B0, A1, A2;
     
     
 
@@ -392,27 +391,28 @@ void iir_q16(uint8 *X, int n, float32 alpha, int q, uint8 *Y)
     A1 = a1 * Q;
     A2 = a2 * Q;
 
+    /* need to be 256 */
+    if (B0 + A1 + A2 == 255) {
+        A2 += 1;
+    }
+    printf("    sum of coeff A1 + A2 + B0 : %d\n", A1 + A2 + B0);
+
     y1 = y2 = X[0];
     
-    printf("b0 : %f\n", b0);
-    printf("Q : %d\n", Q);
-    printf("B0 : %f\n", B0);
-    printf("A1 : %f\n", A1);
-    printf("A2 : %f\n", A2);
-    printf("sum of coeff a1 + a2 + b0 : %f\n", a1 + a2 + b0);
-    printf("sum of coeff A1 + A2 + B0 : %f\n", A1 + A2 + B0);
+    printf("    b0 : %f, ", b0);
+    printf("a1 : %f, ", a1);
+    printf("a2 : %f\n", a2);
+    
+    printf("    B0 : %d, ", B0);
+    printf("A1 : %d, ", A1);
+    printf("A2 : %d\n", A2);
+    //printf("sum of coeff a1 + a2 + b0 : %f\n", a1 + a2 + b0);
     for(i = 0; i < n; i++) {
         
         x0 = X[i];
-
-        //printf("value x0 : %d\n", x0);
-
-        if (x0 == 0) {
-            y0 = A1 * y1 + A2 * y2;
-        } else {
-            y0 = B0 * x0 + A1 * y1 + A2 * y2;
-        }
-
+        
+        y0 = ( (B0 * x0 + A1 * y1 + A2 * y2) + Q/2);
+        y0 /= Q;
 
         Y[i] = (uint8) y0;
         
@@ -431,38 +431,46 @@ void iir_q32(uint8 *X, int n, float32 alpha, int q, uint8 *Y)
     int i;
     int radius = 2;
     
+    sint32 Q = 1 << q;
     sint32 x0, y0, y1, y2;
     sint32 X0, Y0, Y1, Y2;  
-    sint32 Q = 1 << q;
-    X0 = x0 * Q;
-    Y0 = y0 * Q;
-    Y1 = y1 * Q; 
-    Y2 = y2 * Q;
-    
+    sint32 B0, A1, A2;
+
     float32 gamma;
     float32  b0, a1, a2;
-    
-    uint8 *T; // tableau temporaire avec bords
-    float32 B0, A1, A2;
-    
+
     gamma = exp(-alpha);
     
     b0 = (1.0f - gamma) * (1.0f - gamma);
     a1 = 2.0f * gamma;
     a2 = - gamma * gamma;
     
+    
     B0 = b0 * Q;
     A1 = a1 * Q;
     A2 = a2 * Q;
 
     y1 = y2 = X[0];
+
+    //X0 = x0 * Q;
+    //Y0 = y0 * Q;
+    Y1 = y1 * Q; 
+    Y2 = y2 * Q;
+
+
+        /* need to be 256 */
+    if (B0 + A1 + A2 == 255) {
+        B0 += 1;
+    }
     
     for(i = 0; i < n; i++) {
-        
-        X0 = X[i];
-        Y0 = B0 * X0 + A1 * Y1 + A2 * Y2;
+        X0 = X[i] * Q;
 
-        
+        Y0 = (B0 * X0 + A1 * Y1 + A2 * Y2) + (Q)/2;
+        Y0 /= Q;
+
+        y0 = (Y0 + Q/2) / (Q);
+
         Y[i] = (uint8) y0;
         
         Y2 = Y1; Y1 = Y0;

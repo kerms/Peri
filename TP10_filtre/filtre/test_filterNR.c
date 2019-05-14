@@ -235,7 +235,7 @@ FIR:
  
     alpha = 0.8;  // alpha [0.5 : 1.0] = lissage fort / lissage faible
     alpha = 0.6;
-    //alpha = 0.4;
+    alpha = 0.4;
     iir_f32(X, size, alpha, Y); // sur 8 bits
     psnr = psnr_ui8vector(X0, 0, size-1, Y);
     printf("IIR f32(alpha=%.1f) PSNR = %6.2f db\n", alpha, psnr);
