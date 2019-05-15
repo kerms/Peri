@@ -45,3 +45,13 @@ Dans le calcul de Y0, les opérandes sont multipliées par Q^2, il faut alors le
 ### Comparaison
 
 Les filtres en virgule fixe sont très proches voir identique au psnr en virgule flottante. Voilà, comme quoi les calculs en virgule fixe peut être aussi précis que les calculs en virgule flottante, en plus c'est plus rapide.
+
+| sigma  |       |          |          |          |
+| noise  | alpha |  IIR f32 |  IIR q16 |  IIR q32 |
+|--------|-------|----------|----------|----------|
+| 10     | 0.8   | 41.58    | 40.18    | 41.71    |
+|        | 0.6   | 44.67    | 44.05    | 44.49    |
+|        | 0.4   | 47.92    | 48.24    | 47.92    |
+| 5      | 0.8   | 81.05    | 89.49    | 79.94    |
+|        | 0.6   | 94.65    | 87.96    | 91.11    |
+|        | 0.4   | 100.12   | 123.68   | 100.12   |
