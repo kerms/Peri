@@ -34,7 +34,7 @@ struct sockaddr_in serv_addr.sin_port = htons(portno);// convert the port number
 
 ```c
 serv_addr.sin_family = AF_INET;//IPv4
-serv_addr.sin_addr.s_addr = INADDR_ANY;//Takes one of the available interfaces					
+serv_addr.sin_addr.s_addr = INADDR_ANY;//Takes one of the available interfaces
 ```
 
 - Lier le socket avec une structure sockaddr : "nommer" la socket
@@ -44,7 +44,7 @@ serv_addr.sin_addr.s_addr = INADDR_ANY;//Takes one of the available interfaces
         error("ERROR on binding"); // display error
 ```
 
-- Écouter sur la socket avec un nombre maximum de connections pendantes = 5  
+- Écouter sur la socket avec un nombre maximum de connections pendantes = 5
 
 ```c
  listen(sockfd, 5); 
