@@ -414,8 +414,11 @@ void iir_q16(uint8 *X, int n, float32 alpha, int q, uint8 *Y)
         y0 = ( (B0 * x0 + A1 * y1 + A2 * y2) + Q/2);
         y0 /= Q;
 
+        if(y0 <   0) y0 =   0;
+        if(y0 > 255) y0 = 255;
+
         Y[i] = (uint8) y0;
-        
+
         y2 = y1;
         y1 = y0;
     }
@@ -456,8 +459,15 @@ void iir_q32(uint8 *X, int n, float32 alpha, int q, uint8 *Y)
     //Y0 = y0 * Q;
     Y1 = y1 * Q; 
     Y2 = y2 * Q;
+    printf("    b0 : %f, ", b0);
+    printf("a1 : %f, ", a1);
+    printf("a2 : %f\n", a2);
+    
+    printf("    B0 : %d, ", B0);
+    printf("A1 : %d, ", A1);
+    printf("A2 : %d\n", A2);
 
-
+    //printf("    sum of coeff A1 + A2 + B0 : %d\n", A1 + A2 + B0);
         /* need to be 256 */
     if (B0 + A1 + A2 == 255) {
         B0 += 1;
@@ -467,12 +477,23 @@ void iir_q32(uint8 *X, int n, float32 alpha, int q, uint8 *Y)
         X0 = X[i] * Q;
 
         Y0 = (B0 * X0 + A1 * Y1 + A2 * Y2) + (Q)/2;
+        //printf("    Y0 : %d\n", Y0);
         Y0 /= Q;
+        //printf("    Y0/Q : %d\n", Y0);
 
         y0 = (Y0 + Q/2) / (Q);
+        //printf("    y0 : %d\n", y0);
+        if(y0 <   0) y0 =   0;
+        if(y0 > 255) y0 = 255;
 
         Y[i] = (uint8) y0;
-        
+
         Y2 = Y1; Y1 = Y0;
+        /*
+        printf("    X0 : %d, ", X0);
+        printf("Y0 : %d, ", Y0);
+        printf("Y1 : %d, ", Y1);
+        printf("Y2 : %d\n", Y2);
+        */
     }
 }
