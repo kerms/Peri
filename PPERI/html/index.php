@@ -1,5 +1,6 @@
 <?php include_once ('include/header.php'); ?>
-
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 
 <div class="jumbotron text-center">
   <h1>Projet Peri</h1>
@@ -7,6 +8,7 @@
 </div>
 
 <?php
+header("Refresh:3");
 $servername = "localhost";
 $username = "root";
 $password = "peri2019";
@@ -19,67 +21,96 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT value, capteur_id,time FROM capteur_value WHERE capteur_id=1 LIMIT 60;";
+$sql = "SELECT value, capteur_id,time FROM capteur_value WHERE capteur_id=1  ORDER BY time DESC LIMIT 60;";
 $result = $conn->query($sql);
 
+/*
 $chart_array_capteur_1 = array();
 if ($result->num_rows > 0) {
     // output data of each row
     while($row = $result->fetch_assoc()) {
-        array_push($chart_array_capteur_1, array("x"=> $row["time"], "y"=> $row["value"]));
-        echo "capteur_id: " . $row["capteur_id"]. " - value: " . $row["value"]."<br>";
+        array_push($chart_array_capteur_1, array(date_format(date_create($row["time"]), 'Y-m-d H:i:s'), $row["value"]));
+
+        echo "capteur_id: " . $row["capteur_id"]. " - value: " . $row["value"]. " - time : " . ($row["time"]) . "<br>";
     }
 } else {
     echo "0 results";
-}
-$conn->close();
+}*/
 
+
+$dataPoints = array();
 
 ?> 
 
-<script>
-window.onload = function () {
+<?php
+    while($row = mysqli_fetch_assoc($result)){
+        //echo "['".$row["time"]."', ".$row["value"]."],";
+    	array_push($dataPoints, array("label" => "'".$row["time"]."'", "y"=>$row["value"]));
+    }
+?>
 
-var dataPoints = [];
+<?php $conn->close(); ?>
+
+
+<script>
+window.onload = function() {
+ 
+var dataPoints = <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>;
+ 
 var chart = new CanvasJS.Chart("chartContainer", {
-	title :{
-		text: "Dynamic Data"
+	theme: "light2",
+	title: {
+		text: "distance"
 	},
 	axisX:{
-        title: "timeline",
-    },
-    axisY: {
-        title: "Downloads"
-    },     
+		title: "date time"
+	},
+	axisY:{
+		includeZero: false,
+		suffix: " mm"
+	},
 	data: [{
 		type: "line",
 		dataPoints: dataPoints
 	}]
 });
+chart.render();
+ 
 
-var xVal = 0;
-var yVal = 100; 
+ 
 var updateInterval = 1000;
-var dataLength = 60; // number of dataPoints visible at any point
+var xValue = dataPoints.length;
+var yValue = dataPoints[dataPoints.length - 1].y;
 
-var updateChart = function (count) {
+function updateChart() {
 
-	count = count || 1;
-	
-	dataPoints.push({ x: xValue, y: yValue });
-	xValue++;
-	chart.render();
+	<?php
+		$conn = new mysqli($servername, $username, $password, $dbname);
+		// Check connection
+		if ($conn->connect_error) {
+		    die("Connection failed: " . $conn->connect_error);
+		}
 
+		$sql = "SELECT value, capteur_id,time FROM capteur_value WHERE capteur_id=1  ORDER BY time DESC LIMIT 60;";
+		$result = $conn->query($sql);
+		$dataPoints = array();
+	    while($row = mysqli_fetch_assoc($result)){
+	    	array_push($dataPoints, array("label" => "'".$row["time"]."'", "y"=>$row["value"]));
+	    }
+		$conn->close();
+	?>
+
+	dataPoints =  <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>;
 	chart.render();
 };
 
-updateChart(dataLength);
-setInterval(function(){updateChart()}, updateInterval);
+setInterval(function () { updateChart() }, updateInterval);
 
 }
 </script>
 
-<div id="chartContainer" style="height: 370px; width: 100%;">
-</div>
+
+
+<div id="chartContainer" style="height: 370px; width: 100%;"></div>
 
 <?php include_once ('include/footer.php'); ?>
